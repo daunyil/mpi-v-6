@@ -7,5 +7,6 @@ export type { ModuleTypeInfo } from './module-types';
 
 export { FUNGSI_NORMA, esc, parseTimerSeconds } from './constants';
 
-export { ExportData, ALL_TEMPLATE_IDS, getAccentForPertemuan } from './types';
+export type { ExportData } from './types';
+export { ALL_TEMPLATE_IDS, getAccentForPertemuan } from './types';
 export type { TemplateId } from './types';

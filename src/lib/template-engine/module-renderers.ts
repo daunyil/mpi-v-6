@@ -8,7 +8,7 @@
 
 import { esc } from '@/lib/shared/constants';
 import { getModuleTypeInfo } from '@/lib/shared/module-types';
-import { hasGameRenderer, buildAllGamesHtml } from '@/lib/export/game-populator';
+import { hasGameRenderer, buildAllGamesHtml } from './game-populator';
 
 // ── Shared types ───────────────────────────────────────────────
 type ModData = Record<string, unknown>;
@@ -236,6 +236,231 @@ export function renderFillblank(mod: ModData): string {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// 5. TAB-ICONS  (type: 'tab-icons')
+// ═══════════════════════════════════════════════════════════════
+// Data shape: { type, title, intro?, tabs: Array<{icon, label, color, content}> }
+// Interactive tabs with icons — generalizes the Fungsi Norma pattern.
+// ═══════════════════════════════════════════════════════════════
+export function renderTabIcons(mod: ModData): string {
+  const info = getModuleTypeInfo('tab-icons');
+  const title = String(mod.title || info.label);
+  const intro = String(mod.intro || '');
+  const tabs = (mod.tabs as Array<{ icon?: string; label?: string; color?: string; content?: string }>) || [];
+
+  if (tabs.length === 0) {
+    return `<div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
+      <div style="font-weight:900;font-size:.95rem;color:${info.color}">${info.icon} ${esc(title)}</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:6px">Belum ada tab.</div>
+    </div>`;
+  }
+
+  const tabGroupId = `ti-${Math.random().toString(36).slice(2, 8)}`;
+  const rowId = `${tabGroupId}-row`;
+  const contentId = `${tabGroupId}-content`;
+
+  // Build tab buttons for the initial (first tab active) state
+  const tabsJson = tabs.map(t => ({
+    icon: t.icon || '📌',
+    label: t.label || 'Tab',
+    color: t.color || info.color,
+    content: t.content || '',
+  }));
+
+  // Render initial active tab content
+  const firstTab = tabsJson[0];
+
+  const introHtml = intro
+    ? `<div style="font-size:.84rem;color:var(--muted);line-height:1.6;margin-bottom:10px">${esc(intro)}</div>`
+    : '';
+
+  return `
+  <div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:1.5rem">${info.icon}</span>
+      <div>
+        <div style="font-weight:900;font-size:.95rem;color:${info.color}">${esc(title)}</div>
+        <div style="font-size:.72rem;color:var(--muted);font-weight:600">${esc(info.desc)}</div>
+      </div>
+    </div>
+    ${introHtml}
+    <!-- Tab buttons -->
+    <div id="${rowId}" class="ftab-row">
+      ${tabsJson.map((t, i) => `<div class="ftab"${i === 0 ? ` style="background:${t.color};color:#0e1c2f;border-color:transparent"` : ''} onclick="switchTiTab('${tabGroupId}',${i})">${t.icon} ${esc(t.label)}</div>`).join('\n      ')}
+    </div>
+    <!-- Tab content -->
+    <div id="${contentId}">
+      <div style="background:${firstTab.color}0d;border:1px solid ${firstTab.color}35;border-radius:14px;padding:16px;animation:fadeIn .3s ease">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:2rem">${firstTab.icon}</span>
+          <div style="font-weight:900;font-size:1rem;color:${firstTab.color}">${esc(firstTab.label)}</div>
+        </div>
+        <div style="font-size:.84rem;line-height:1.7;color:var(--text)">${esc(firstTab.content)}</div>
+      </div>
+    </div>
+  </div>
+  <script>
+  (function(){
+    var TG=${JSON.stringify(tabsJson)};
+    window.switchTiTab=function(gid,idx){
+      var row=document.getElementById(gid+'-row');
+      var cont=document.getElementById(gid+'-content');
+      if(!row||!cont)return;
+      var t=TG[idx];if(!t)return;
+      row.innerHTML=TG.map(function(tab,i){
+        var active=i===idx;
+        return '<div class="ftab"'+(active?' style="background:'+tab.color+';color:#0e1c2f;border-color:transparent"':'')+' onclick="switchTiTab(\''+gid+'\','+i+')">'+tab.icon+' '+tab.label+'</div>';
+      }).join('');
+      cont.innerHTML=
+        '<div style="background:'+t.color+'0d;border:1px solid '+t.color+'35;border-radius:14px;padding:16px;animation:fadeIn .3s ease">'+
+          '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
+            '<span style="font-size:2rem">'+t.icon+'</span>'+
+            '<div style="font-weight:900;font-size:1rem;color:'+t.color+'">'+t.label+'</div>'+
+          '</div>'+
+          '<div style="font-size:.84rem;line-height:1.7;color:var(--text)">'+t.content+'</div>'+
+        '</div>';
+    };
+  })();
+  <\/script>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 6. COMPARISON  (type: 'comparison')
+// ═══════════════════════════════════════════════════════════════
+// Data shape: { type, title, intro?, kolom: string[], baris: string[][], tanya? }
+// Side-by-side comparison rendered as a responsive table.
+// ═══════════════════════════════════════════════════════════════
+export function renderComparison(mod: ModData): string {
+  const info = getModuleTypeInfo('comparison');
+  const title = String(mod.title || info.label);
+  const intro = String(mod.intro || '');
+  const kolom = (mod.kolom as string[]) || [];
+  const baris = (mod.baris as string[][]) || [];
+  const tanya = String(mod.tanya || '');
+
+  if (kolom.length === 0) {
+    return `<div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
+      <div style="font-weight:900;font-size:.95rem;color:${info.color}">${info.icon} ${esc(title)}</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:6px">Belum ada data perbandingan.</div>
+    </div>`;
+  }
+
+  const introHtml = intro
+    ? `<div style="font-size:.84rem;color:var(--muted);line-height:1.6;margin-bottom:12px">${esc(intro)}</div>`
+    : '';
+
+  // Header row
+  const headerHtml = kolom.map((k, i) =>
+    `<th style="padding:10px 14px;font-size:.78rem;font-weight:800;text-align:${i === 0 ? 'left' : 'center'};color:${info.color};border-bottom:2px solid ${info.color}40;white-space:nowrap">${esc(k)}</th>`
+  ).join('\n      ');
+
+  // Data rows
+  const rowsHtml = baris.map((row, ri) => {
+    const bgColor = ri % 2 === 0 ? 'rgba(255,255,255,.02)' : 'rgba(255,255,255,.05)';
+    const cellsHtml = row.map((cell, ci) =>
+      `<td style="padding:10px 14px;font-size:.84rem;line-height:1.5;color:var(--text);border-bottom:1px solid var(--border);${ci === 0 ? 'font-weight:800' : ''}">${esc(cell)}</td>`
+    ).join('\n        ');
+    return `      <tr style="background:${bgColor}">${cellsHtml}</tr>`;
+  }).join('\n');
+
+  // Optional discussion question
+  const tanyaHtml = tanya
+    ? `<div style="margin-top:14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px">
+        <div style="font-size:.72rem;font-weight:800;color:${info.color};margin-bottom:6px">💬 PERTANYAAN DISKUSI</div>
+        <div style="font-size:.88rem;font-weight:700;line-height:1.6;color:var(--text)">${esc(tanya)}</div>
+      </div>`
+    : '';
+
+  return `<div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:1.5rem">${info.icon}</span>
+      <div>
+        <div style="font-weight:900;font-size:.95rem;color:${info.color}">${esc(title)}</div>
+        <div style="font-size:.72rem;color:var(--muted);font-weight:600">${esc(info.desc)}</div>
+      </div>
+    </div>
+    ${introHtml}
+    <!-- Comparison table -->
+    <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-top:4px">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr>${headerHtml}</tr>
+        </thead>
+        <tbody>
+${rowsHtml}
+        </tbody>
+      </table>
+    </div>
+    ${tanyaHtml}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 7. ICON-EXPLORE  (type: 'icon-explore')
+// ═══════════════════════════════════════════════════════════════
+// Data shape: { type, title, intro?, items: Array<{icon, label, color, desc}> }
+// Grid of clickable icons with expand/collapse details.
+// Uses <details>/<summary> — no JS needed.
+// ═══════════════════════════════════════════════════════════════
+export function renderIconExplore(mod: ModData): string {
+  const info = getModuleTypeInfo('icon-explore');
+  const title = String(mod.title || info.label);
+  const intro = String(mod.intro || '');
+  const items = (mod.items as Array<{ icon?: string; label?: string; color?: string; desc?: string }>) || [];
+
+  if (items.length === 0) {
+    return `<div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
+      <div style="font-weight:900;font-size:.95rem;color:${info.color}">${info.icon} ${esc(title)}</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:6px">Belum ada item.</div>
+    </div>`;
+  }
+
+  const introHtml = intro
+    ? `<div style="font-size:.84rem;color:var(--muted);line-height:1.6;margin-bottom:12px">${esc(intro)}</div>`
+    : '';
+
+  const gridId = `ie-${Math.random().toString(36).slice(2, 8)}`;
+
+  const cardsHtml = items.map(item => {
+    const icon = item.icon || '📌';
+    const label = item.label || 'Item';
+    const color = item.color || info.color;
+    const desc = item.desc || '';
+
+    return `<div style="background:${color}0a;border:1px solid ${color}30;border-radius:14px;overflow:hidden;transition:all .2s">
+      <details style="margin:0">
+        <summary style="display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;list-style:none;font-weight:800;font-size:.88rem;color:${color}">
+          <span style="font-size:1.6rem;line-height:1">${icon}</span>
+          <span style="flex:1">${esc(label)}</span>
+          <span style="font-size:.7rem;color:var(--muted);font-weight:600">Ketuk ▾</span>
+        </summary>
+        <div style="padding:0 16px 14px;font-size:.82rem;line-height:1.7;color:var(--text);border-top:1px solid ${color}20;margin-top:0;padding-top:12px">
+          ${esc(desc)}
+        </div>
+      </details>
+    </div>`;
+  }).join('\n    ');
+
+  return `<div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:1.5rem">${info.icon}</span>
+      <div>
+        <div style="font-weight:900;font-size:.95rem;color:${info.color}">${esc(title)}</div>
+        <div style="font-size:.72rem;color:var(--muted);font-weight:600">${esc(info.desc)}</div>
+      </div>
+    </div>
+    ${introHtml}
+    <!-- Icon grid: 2 cols mobile, 3 cols desktop -->
+    <style>
+      #${gridId}{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+      @media(min-width:640px){#${gridId}{grid-template-columns:repeat(3,1fr);}}
+    </style>
+    <div id="${gridId}">
+      ${cardsHtml}
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // RENDERER DISPATCH — Maps module type → render function
 // ═══════════════════════════════════════════════════════════════
 const RENDERER_MAP: Record<string, (mod: ModData) => string> = {
@@ -244,6 +469,9 @@ const RENDERER_MAP: Record<string, (mod: ModData) => string> = {
   diskusi:   renderDiskusi,
   callout:   renderCallout,
   fillblank: renderFillblank,
+  'tab-icons':   renderTabIcons,
+  'icon-explore': renderIconExplore,
+  comparison:    renderComparison,
 };
 
 /** Check if a module type has a dedicated renderer (module or game) */

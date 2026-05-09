@@ -298,18 +298,12 @@ export function unifiedExport(mode?: ExportMode): string {
       return exportProject(authData);
     }
     case 'hybrid': {
-      // Hybrid export: template first, then append canvas pages
-      const templateHtml = exportProject(getAuthoringExportData());
-      const canvaState = useCanvaStore.getState();
-
-      // Only add canvas pages that have actual content
-      const contentPages = canvaState.pages.filter(p => p.elements.length > 0);
-      if (contentPages.length === 0) return templateHtml;
-
-      // For hybrid, we prefer the template engine output as the primary
-      // and note that canvas pages are available for separate export
-      // This is a safe default — full merging would require DOM manipulation
-      return templateHtml;
+      // Hybrid export: template pipeline as primary (richer output).
+      // Canvas pages are designed for the visual canvas editor;
+      // the template engine produces a more complete interactive experience.
+      // Teachers should use the Canvas tab if they want canvas-only export.
+      const authData = getAuthoringExportData();
+      return exportProject(authData);
     }
     default:
       return exportProject(getAuthoringExportData());
@@ -329,4 +323,138 @@ export function hasAuthoringContent(): boolean {
     || s.games.length > 0
     || s.materi.blok.length > 0
     || !!s.meta.judulPertemuan;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION E: VALIDATION — Pre-export smoke test
+// ═══════════════════════════════════════════════════════════════
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+/**
+ * Validate export data from both stores before export.
+ * Returns { valid, errors, warnings } — errors are fatal, warnings are informational.
+ * Call before unifiedExport() to catch issues early.
+ */
+export function validateExportData(): ValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  const authState = useAuthoringStore.getState();
+  const canvaState = useCanvaStore.getState();
+
+  // ── Meta validation ───────────────────────────────────────
+  if (!authState.meta.judulPertemuan) {
+    warnings.push('meta.judulPertemuan is empty — cover screen will use default title');
+  }
+  if (!authState.meta.mapel) {
+    warnings.push('meta.mapel is empty — subject info missing');
+  }
+  if (!authState.meta.kelas) {
+    warnings.push('meta.kelas is empty — class info missing');
+  }
+
+  // ── CP validation ─────────────────────────────────────────
+  if (!authState.cp.elemen && !authState.cp.capaianFase) {
+    warnings.push('cp.elemen and cp.capaianFase are both empty — CP/TP/ATP screen may look sparse');
+  }
+
+  // ── TP validation ─────────────────────────────────────────
+  if (authState.tp.length === 0) {
+    warnings.push('tp is empty — no Tujuan Pembelajaran defined');
+  } else {
+    authState.tp.forEach((t, i) => {
+      if (!t.verb) warnings.push(`tp[${i}].verb is empty`);
+      if (!t.desc) warnings.push(`tp[${i}].desc is empty`);
+    });
+  }
+
+  // ── Kuis validation ───────────────────────────────────────
+  if (authState.kuis.length > 0) {
+    authState.kuis.forEach((k, i) => {
+      if (!k.q) errors.push(`kuis[${i}].q is empty — quiz question text missing`);
+      if (!k.opts || k.opts.length < 2) errors.push(`kuis[${i}].opts has fewer than 2 options`);
+      if (k.ans < 0 || k.ans >= (k.opts?.length || 0)) errors.push(`kuis[${i}].ans (${k.ans}) is out of range for ${k.opts?.length || 0} options`);
+    });
+  }
+
+  // ── Materi validation ─────────────────────────────────────
+  if (authState.materi.blok.length > 0) {
+    authState.materi.blok.forEach((b, i) => {
+      if (!b.tipe) errors.push(`materi.blok[${i}].tipe is empty — block type required`);
+    });
+  }
+
+  // ── Modules validation ────────────────────────────────────
+  if (authState.modules.length > 0) {
+    authState.modules.forEach((m, i) => {
+      if (!m.type) errors.push(`modules[${i}].type is empty — module type required`);
+      if (!m.title) warnings.push(`modules[${i}].title is empty — module will use default label`);
+    });
+  }
+
+  // ── Games validation ──────────────────────────────────────
+  if (authState.games.length > 0) {
+    authState.games.forEach((g, i) => {
+      if (!g.type) errors.push(`games[${i}].type is empty — game type required`);
+    });
+  }
+
+  // ── Alur validation ───────────────────────────────────────
+  if (authState.alur.length > 0) {
+    authState.alur.forEach((a, i) => {
+      if (!a.fase) warnings.push(`alur[${i}].fase is empty`);
+      if (!a.judul) warnings.push(`alur[${i}].judul is empty`);
+    });
+  }
+
+  // ── Skenario validation ───────────────────────────────────
+  if (authState.skenario.length > 0) {
+    authState.skenario.forEach((s, i) => {
+      if (!s.title) warnings.push(`skenario[${i}].title is empty`);
+      if (!s.choices) warnings.push(`skenario[${i}].choices is empty — scenario needs choices`);
+    });
+  }
+
+  // ── Canvas pages validation ───────────────────────────────
+  const pagesWithElements = canvaState.pages.filter(p => p.elements.length > 0);
+  if (pagesWithElements.length > 0) {
+    pagesWithElements.forEach((p, i) => {
+      p.elements.forEach((el, j) => {
+        if (el.type === 'kuis' && (el.dataIdx ?? -1) < 0) {
+          warnings.push(`canvas page[${i}].elements[${j}] is kuis with no dataIdx — won't link to quiz data`);
+        }
+      });
+    });
+  }
+
+  // ── Cross-store consistency ───────────────────────────────
+  const kuisElementsInCanvas = canvaState.pages.flatMap(p =>
+    p.elements.filter(e => e.type === 'kuis')
+  );
+  if (kuisElementsInCanvas.length > 0 && authState.kuis.length === 0) {
+    warnings.push('Canvas has kuis elements but authoring store has no quiz data — quiz will show placeholders');
+  }
+
+  // ── No content at all ─────────────────────────────────────
+  const hasAnyContent = authState.kuis.length > 0
+    || authState.modules.length > 0
+    || authState.games.length > 0
+    || authState.materi.blok.length > 0
+    || !!authState.meta.judulPertemuan
+    || pagesWithElements.length > 0;
+
+  if (!hasAnyContent) {
+    errors.push('No content in either store — export will produce an empty project');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+  };
 }

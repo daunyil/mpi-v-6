@@ -23,4 +23,4 @@ export type { AuthoringExportData } from './bridge';
 export { renderModule, renderFlipcard, renderDiskusi, renderCallout, renderFillblank, hasModuleRenderer } from './module-renderers';
 
 // Game populator
-export { populateGames, buildAllGamesHtml, hasGameRenderer } from '@/lib/export/game-populator';
+export { populateGames, buildAllGamesHtml, hasGameRenderer } from './game-populator';

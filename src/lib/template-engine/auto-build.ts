@@ -140,6 +140,9 @@ function analyzeContent(data: AutoBuildData): ContentAnalysis {
     /diskusi/i.test(p.kegiatan || '')
   );
 
+  // Detect if modules array has diskusi modules
+  const hasDiskusiInModules = moduleTypes.has('diskusi');
+
   // useNormaMode: if there's a tab-icons module (fungsi norma content pattern)
   const useNormaMode = moduleTypes.has('tab-icons');
 
@@ -154,7 +157,7 @@ function analyzeContent(data: AutoBuildData): ContentAnalysis {
     hasIconExplore: moduleTypes.has('icon-explore'),
     hasRoda: moduleTypes.has('roda'),
     hasSorting: moduleTypes.has('matching') || moduleTypes.has('memory') || moduleTypes.has('truefalse'),
-    hasDiskusi: hasDiskusiInAtp,
+    hasDiskusi: hasDiskusiInAtp || hasDiskusiInModules,
     hasCpOrTp: !!(data.cp?.capaianFase || data.tp?.length),
     useNormaMode,
     pertemuanKe,
@@ -293,11 +296,26 @@ export function autoBuildScreens(data: AutoBuildData): BuiltScreen[] {
     });
   }
 
-  // ── 8. DISKUSI+TIMER — if ATP has discussion activities ────
+  // ── 8. DISKUSI+TIMER — if ATP or modules have discussion ────
   if (ca.hasDiskusi) {
-    // Find the discussion info from ATP
+    // Prefer diskusi module data over ATP — modules have richer content
+    const diskusiModule = (data.modules || []).find(m => String(m.type || '') === 'diskusi');
     const discAtp = (data.atp?.pertemuan || []).find(p => /diskusi/i.test(p.kegiatan || ''));
-    const diskusiPertanyaan = discAtp?.kegiatan || 'Diskusikan pertanyaan berikut dalam kelompokmu!';
+
+    // Use module data if available, fall back to ATP
+    const diskusiPertanyaan = diskusiModule
+      ? String(diskusiModule.pertanyaan || '')
+      : (discAtp?.kegiatan || 'Diskusikan pertanyaan berikut dalam kelompokmu!');
+    const diskusiDurasi = diskusiModule
+      ? String(diskusiModule.durasi || '05:00')
+      : '05:00';
+    const diskusiPetunjuk = diskusiModule
+      ? String(diskusiModule.petunjuk || '')
+      : 'Diskusikan dalam kelompok dan tuliskan kesimpulan kalian!';
+    const diskusiJudul = diskusiModule
+      ? String(diskusiModule.title || '💬 Diskusi Kelompok')
+      : '💬 Diskusi Kelompok';
+
     screens.push({
       templateId: 'diskusi-timer',
       screenId: 's-diskusi',
@@ -305,10 +323,11 @@ export function autoBuildScreens(data: AutoBuildData): BuiltScreen[] {
       included: true,
       data: {
         logo: M.namaBab || M.judulPertemuan || 'Media',
-        judul: '💬 Diskusi Kelompok',
+        judul: diskusiJudul,
         pertanyaan: diskusiPertanyaan,
-        durasi: '05:00',
-        petunjuk: 'Diskusikan dalam kelompok dan tuliskan kesimpulan kalian!',
+        durasi: diskusiDurasi,
+        petunjuk: diskusiPetunjuk,
+        modulesHtml: '',  // will be filled at export time by bridge
       },
     });
   }
@@ -492,8 +511,8 @@ export function exportWithTemplateSystem(
       screen.data.modulesHtml = modulesHtml;
       screen.data.materiHtml = materiHtml;
       // Use bridge-provided fungsi HTML if available, else generate default
-      if (extraScreenHtml['_fungsiHtml']) {
-        screen.data.fungsiHtml = extraScreenHtml['_fungsiHtml'];
+      if (extraScreenHtml['fungsiHtml']) {
+        screen.data.fungsiHtml = extraScreenHtml['fungsiHtml'];
       } else {
         screen.data.fungsiHtml = `<div class="card mt14">
           <div class="h2">⚖️ Fungsi <span class="hl">Norma</span></div>
@@ -507,6 +526,11 @@ export function exportWithTemplateSystem(
     // Games screen (legacy — kept for backward compat with s-games)
     if (screen.screenId === 's-games') {
       screen.data.gamesHtml = gamesHtml;
+    }
+
+    // Diskusi screen: receives diskusi module HTML from bridge
+    if (screen.screenId === 's-diskusi' && extraScreenHtml['s-diskusi']) {
+      screen.data.modulesHtml = extraScreenHtml['s-diskusi'];
     }
 
     // Hubungan Konsep screen: receives comparison/icon-explore module HTML

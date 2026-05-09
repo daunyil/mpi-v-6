@@ -225,6 +225,7 @@ const TEMPLATE_DISKUSI_TIMER: ScreenTemplate = {
     { id: 'pertanyaan', label: 'Pertanyaan Diskusi', type: 'richtext', required: true },
     { id: 'durasi', label: 'Durasi (menit)', type: 'text', default: '05:00' },
     { id: 'petunjuk', label: 'Petunjuk', type: 'text', default: 'Diskusikan dalam kelompok dan tuliskan kesimpulan kalian!' },
+    { id: 'modulesHtml', label: 'Modules HTML', type: 'richtext' },
   ],
   render(data, ctx) {
     const logo = esc(data.logo as string || 'Media');
@@ -232,6 +233,7 @@ const TEMPLATE_DISKUSI_TIMER: ScreenTemplate = {
     const pertanyaan = data.pertanyaan as string || '';
     const durasi = esc(data.durasi as string || '05:00');
     const petunjuk = esc(data.petunjuk as string || 'Diskusikan dalam kelompok dan tuliskan kesimpulan kalian!');
+    const modulesHtml = data.modulesHtml as string || '';
     return `<div class="screen" id="${ctx.screenId}">
   ${navbar(logo, 50, ctx.score)}
   <div class="main">
@@ -252,6 +254,7 @@ const TEMPLATE_DISKUSI_TIMER: ScreenTemplate = {
         <textarea style="width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:.85rem;resize:vertical;min-height:80px" placeholder="Tulis jawaban diskusi di sini…"></textarea>
       </div>
     </div>
+    ${modulesHtml}
     <div class="btn-row btn-center mt20">
       <button class="btn btn-g" onclick="goScreen('s-kuis')">Selesai Diskusi →</button>
     </div>

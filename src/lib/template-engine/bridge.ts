@@ -17,7 +17,7 @@ import { exportWithTemplateSystem } from './auto-build';
 import { getModuleTypeInfo } from '@/lib/shared/module-types';
 import { FUNGSI_NORMA, esc } from '@/lib/shared/constants';
 import { renderModule } from './module-renderers';
-import { buildAllGamesHtml } from '@/lib/export/game-populator';
+import { buildAllGamesHtml } from './game-populator';
 
 // ── Unified type — re-export for backward compat ───────────
 // AuthoringExportData is now an alias for the unified ExportData type
@@ -378,7 +378,13 @@ export function buildExtraScreenHtml(modules: AutoBuildData['modules']): Record<
     extra['s-roda'] = buildModulesHtml(rodaMods);
   }
   if (diskusiMods.length > 0) {
-    extra['s-diskusi'] = buildModulesHtml(diskusiMods);
+    // Only render diskusi modules beyond the first — the first module's data
+    // (pertanyaan, durasi, petunjuk) is already used by the diskusi screen
+    // template's built-in rendering, so rendering it again would duplicate.
+    const extraMods = diskusiMods.slice(1);
+    if (extraMods.length > 0) {
+      extra['s-diskusi'] = buildModulesHtml(extraMods);
+    }
   }
 
   return extra;
@@ -427,7 +433,7 @@ export function exportProject(data: AuthoringExportData): string {
       ...extraScreenHtml,
       // Pass fungsi HTML so exportWithTemplateSystem can use it
       // instead of its hardcoded default
-      _fungsiHtml: fungsiHtml,
+      fungsiHtml: fungsiHtml,
     },
   );
 

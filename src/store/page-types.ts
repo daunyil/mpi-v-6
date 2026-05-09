@@ -566,15 +566,213 @@ const TANTANGAN_TIMER: PageTypeDefinition = {
   },
 };
 
+// ── PAGE TYPE: PEMBUKA & PETUNJUK ────────────────────────────
+
+const PEMBUKA_PETUNJUK: PageTypeDefinition = {
+  id: 'pembuka-petunjuk',
+  name: 'Pembuka & Petunjuk',
+  icon: '📋',
+  description: 'Halaman pembuka modul dengan petunjuk navigasi',
+  category: 'materi',
+  color: '#3ecfcf',
+  options: [
+    { id: 'judulModul', label: 'Judul Modul', type: 'select', default: 'Media Pembelajaran', options: [
+      { value: 'Media Pembelajaran', label: 'Media Pembelajaran' },
+      { value: 'Modul PPKn', label: 'Modul PPKn' },
+      { value: 'Modul IPA', label: 'Modul IPA' },
+      { value: 'Modul Matematika', label: 'Modul Matematika' },
+    ]},
+    { id: 'navbar', label: 'Navbar Otomatis', type: 'toggle', default: true },
+  ],
+  generate: (config) => {
+    const judulModul = (config.judulModul as string) || 'Media Pembelajaran';
+    const hasNavbar = config.navbar !== false;
+
+    const pages: PageBlueprint[] = [];
+
+    // Page 1: Cover Pembuka
+    const coverElements: Omit<CanvaElement, 'id'>[] = [
+      sysEl('shape', { x: 0, y: 0, w: 100, h: 45, label: 'Hero BG', color: 'rgba(62,207,207,0.10)', radius: 0 }),
+      el('teks', { x: 30, y: 8, w: 40, h: 18, label: 'Ikon Utama', text: '📚', fontSize: 56 }),
+      sysEl('teks', { x: 10, y: 30, w: 80, h: 10, label: 'Judul Modul', text: judulModul, fontSize: 28 }),
+      sysEl('shape', { x: 15, y: 44, w: 30, h: 5, label: 'Chip Mapel', color: 'rgba(62,207,207,0.20)', radius: 20 }),
+      sysEl('teks', { x: 16, y: 44, w: 28, h: 5, label: 'Mapel', text: 'PKN', fontSize: 11 }),
+      sysEl('shape', { x: 48, y: 44, w: 30, h: 5, label: 'Chip Kelas', color: 'rgba(62,207,207,0.20)', radius: 20 }),
+      sysEl('teks', { x: 49, y: 44, w: 28, h: 5, label: 'Kelas', text: 'Kelas 7', fontSize: 11 }),
+      sysEl('divider', { x: 10, y: 55, w: 80, h: 1, label: 'Divider', color: 'rgba(255,255,255,0.08)' }),
+      sysEl('teks', { x: 10, y: 58, w: 80, h: 8, label: 'Deskripsi Modul', text: 'Tulis deskripsi singkat modul di sini...', fontSize: 13 }),
+      el('button', { x: 25, y: 72, w: 50, h: 10, icon: '🚀', label: 'Mulai Belajar', text: '🚀  Mulai Belajar', color: '#0891b2', radius: 12 }),
+    ];
+    if (hasNavbar) coverElements.push(navbarBottom());
+
+    pages.push({ label: 'Cover Pembuka', bgColor: '#0a1a2a', elements: coverElements });
+
+    // Page 2: Petunjuk
+    const instructionItems = [
+      { icon: '📖', text: 'Baca materi pembelajaran dengan saksama' },
+      { icon: '💬', text: 'Ikuti diskusi kelompok secara aktif' },
+      { icon: '🎮', text: 'Selesaikan game interaktif' },
+      { icon: '❓', text: 'Jawab kuis dengan teliti' },
+      { icon: '⏱️', text: 'Perhatikan timer pada setiap tantangan' },
+    ];
+
+    const petunjukElements: Omit<CanvaElement, 'id'>[] = [
+      sysEl('teks', { x: 10, y: 5, w: 80, h: 8, label: 'Judul Petunjuk', text: '📋  Petunjuk Pembelajaran', fontSize: 22 }),
+      sysEl('divider', { x: 10, y: 14, w: 80, h: 1, label: 'Divider', color: 'rgba(62,207,207,0.20)' }),
+    ];
+
+    instructionItems.forEach((item, idx) => {
+      const yPos = 18 + idx * 11;
+      petunjukElements.push(
+        sysEl('shape', { x: 8, y: yPos, w: 84, h: 9, label: `Item ${idx + 1} BG`, color: 'rgba(62,207,207,0.06)', radius: 10 }),
+        el('teks', { x: 10, y: yPos + 1, w: 8, h: 7, label: `Nomor ${idx + 1}`, text: `${idx + 1}`, fontSize: 18 }),
+        el('teks', { x: 18, y: yPos + 1, w: 6, h: 7, label: `Ikon ${idx + 1}`, text: item.icon, fontSize: 18 }),
+        el('teks', { x: 26, y: yPos + 2, w: 64, h: 5, label: `Teks ${idx + 1}`, text: item.text, fontSize: 13 }),
+      );
+    });
+
+    petunjukElements.push(
+      el('button', { x: 25, y: 76, w: 50, h: 10, icon: '➡️', label: 'Lanjut', text: '➡️  Lanjut', color: '#0891b2', radius: 12 }),
+    );
+    if (hasNavbar) petunjukElements.push(navbarBottom());
+
+    pages.push({ label: 'Petunjuk', bgColor: '#0a1a2a', elements: petunjukElements });
+
+    return { pages, navbarStyle: hasNavbar ? 'bottom-bar' : undefined };
+  },
+};
+
+// ── PAGE TYPE: DISKUSI KELOMPOK ──────────────────────────────
+
+const DISKUSI: PageTypeDefinition = {
+  id: 'diskusi',
+  name: 'Diskusi Kelompok',
+  icon: '💬',
+  description: 'Diskusi kelompok dengan timer dan area jawaban',
+  category: 'interaksi',
+  color: '#f87171',
+  options: [
+    { id: 'timer', label: 'Timer (menit)', type: 'number', default: 5, min: 1, max: 15, step: 1 },
+    { id: 'jumlahPertanyaan', label: 'Jumlah Pertanyaan', type: 'number', default: 2, min: 1, max: 5, step: 1 },
+    { id: 'navbar', label: 'Navbar Otomatis', type: 'toggle', default: true },
+  ],
+  generate: (config) => {
+    const timerMinutes = (config.timer as number) || 5;
+    const numQ = (config.jumlahPertanyaan as number) || 2;
+    const hasNavbar = config.navbar !== false;
+    const timerText = timerMinutes < 10 ? `0${timerMinutes}:00` : `${timerMinutes}:00`;
+
+    const pages: PageBlueprint[] = [];
+
+    // Page 1: Diskusi Header
+    const headerElements: Omit<CanvaElement, 'id'>[] = [
+      sysEl('shape', { x: 0, y: 0, w: 100, h: 35, label: 'Header BG', color: 'rgba(248,113,113,0.10)', radius: 0 }),
+      sysEl('teks', { x: 10, y: 8, w: 80, h: 10, label: 'Judul Diskusi', text: '💬  Diskusi Kelompok', fontSize: 26 }),
+      sysEl('timer', { x: 35, y: 22, w: 30, h: 8, icon: '⏱️', label: 'Timer Info', text: timerText, color: '#f87171' }),
+      sysEl('teks', { x: 10, y: 42, w: 80, h: 8, label: 'Instruksi', text: `Diskusikan ${numQ} pertanyaan berikut dalam kelompokmu!`, fontSize: 15 }),
+      sysEl('divider', { x: 10, y: 55, w: 80, h: 1, label: 'Divider', color: 'rgba(248,113,113,0.15)' }),
+      sysEl('shape', { x: 10, y: 60, w: 80, h: 18, label: 'Tips Area', color: 'rgba(248,113,113,0.06)', radius: 12 }),
+      sysEl('teks', { x: 14, y: 62, w: 72, h: 4, label: 'Tips Title', text: '💡 Tips Diskusi:', fontSize: 12 }),
+      sysEl('teks', { x: 14, y: 68, w: 72, h: 8, label: 'Tips Content', text: 'Dengarkan teman, tulis jawaban bersama, dan pastikan semua anggota berkontribusi.', fontSize: 11 }),
+    ];
+    if (hasNavbar) headerElements.push(navbarBottom());
+
+    pages.push({ label: 'Diskusi Header', bgColor: '#1a0a0a', elements: headerElements });
+
+    // Pages 2..N+1: Pertanyaan Diskusi
+    const totalPages = numQ;
+    for (let i = 1; i <= numQ; i++) {
+      const qEls: Omit<CanvaElement, 'id'>[] = [
+        pageCounter(i, totalPages),
+        progressTop(i, totalPages),
+        sysEl('timer', { x: 70, y: 3, w: 25, h: 6, icon: '⏱️', label: 'Timer Sistem', text: timerText, color: '#f87171' }),
+        el('teks', { x: 8, y: 14, w: 84, h: 10, label: 'Pertanyaan Diskusi', text: `Pertanyaan ${i}: Tulis pertanyaan diskusi di sini...`, fontSize: 18 }),
+        sysEl('shape', { x: 8, y: 28, w: 84, h: 40, label: 'Area Jawaban', color: 'rgba(248,113,113,0.06)', radius: 14 }),
+        el('teks', { x: 12, y: 30, w: 76, h: 5, label: 'Label Jawaban', text: '✏️  Area Jawaban', fontSize: 12 }),
+        el('teks', { x: 12, y: 38, w: 76, h: 26, label: 'Placeholder Jawaban', text: 'Tulis jawaban kelompokmu di sini...\n\n\n', fontSize: 13 }),
+      ];
+
+      if (hasNavbar) qEls.push(navbarBottom());
+
+      pages.push({ label: `Diskusi ${i}`, bgColor: '#1a0a0a', elements: qEls });
+    }
+
+    return { pages, navbarStyle: hasNavbar ? 'bottom-bar' : undefined };
+  },
+};
+
+// ── PAGE TYPE: REFLEKSI & PENUTUP ────────────────────────────
+
+const REFLEKSI_PENUTUP: PageTypeDefinition = {
+  id: 'refleksi-penutup',
+  name: 'Refleksi & Penutup',
+  icon: '🎓',
+  description: 'Halaman refleksi pembelajaran dan penutup modul',
+  category: 'materi',
+  color: '#a78bfa',
+  options: [
+    { id: 'jumlahRefleksi', label: 'Jumlah Pertanyaan Refleksi', type: 'number', default: 3, min: 1, max: 5, step: 1 },
+    { id: 'navbar', label: 'Navbar Otomatis', type: 'toggle', default: true },
+  ],
+  generate: (config) => {
+    const numR = (config.jumlahRefleksi as number) || 3;
+    const hasNavbar = config.navbar !== false;
+
+    const pages: PageBlueprint[] = [];
+
+    // Page 1: Refleksi
+    const refleksiElements: Omit<CanvaElement, 'id'>[] = [
+      sysEl('teks', { x: 10, y: 5, w: 80, h: 8, label: 'Judul Refleksi', text: '🎓  Refleksi Pembelajaran', fontSize: 24 }),
+      sysEl('divider', { x: 10, y: 14, w: 80, h: 1, label: 'Divider', color: 'rgba(167,139,250,0.20)' }),
+      sysEl('teks', { x: 10, y: 16, w: 80, h: 5, label: 'Instruksi', text: 'Jawab pertanyaan berikut untuk merefleksikan pembelajaranmu:', fontSize: 12 }),
+    ];
+
+    for (let i = 1; i <= numR; i++) {
+      const yPos = 23 + (i - 1) * 18;
+      refleksiElements.push(
+        sysEl('shape', { x: 8, y: yPos, w: 84, h: 16, label: `Area Refleksi ${i}`, color: 'rgba(167,139,250,0.06)', radius: 12 }),
+        el('teks', { x: 12, y: yPos + 1, w: 6, h: 5, label: `Nomor ${i}`, text: `${i}.`, fontSize: 16 }),
+        el('teks', { x: 18, y: yPos + 1, w: 70, h: 5, label: `Pertanyaan Refleksi ${i}`, text: `Tulis pertanyaan refleksi ${i} di sini...`, fontSize: 13 }),
+        el('teks', { x: 14, y: yPos + 7, w: 72, h: 7, label: `Jawaban Refleksi ${i}`, text: 'Tulis jawabanmu di sini...', fontSize: 12 }),
+      );
+    }
+
+    refleksiElements.push(
+      el('button', { x: 20, y: 76, w: 60, h: 10, icon: '💾', label: 'Simpan Refleksi', text: '💾  Simpan Refleksi', color: '#7c3aed', radius: 12 }),
+    );
+    if (hasNavbar) refleksiElements.push(navbarBottom());
+
+    pages.push({ label: 'Refleksi', bgColor: '#0f0e1a', elements: refleksiElements });
+
+    // Page 2: Penutup
+    const penutupElements: Omit<CanvaElement, 'id'>[] = [
+      sysEl('confetti', { x: 5, y: 2, w: 90, h: 30, label: 'Confetti' }),
+      el('teks', { x: 25, y: 8, w: 50, h: 18, label: 'Ikon Perayaan', text: '🌟', fontSize: 56 }),
+      sysEl('teks', { x: 10, y: 30, w: 80, h: 10, label: 'Pesan Penutup', text: 'Pembelajaran Selesai!', fontSize: 28 }),
+      sysEl('shape', { x: 15, y: 45, w: 70, h: 18, label: 'Area Pesan', color: 'rgba(167,139,250,0.08)', radius: 14 }),
+      sysEl('teks', { x: 18, y: 48, w: 64, h: 12, label: 'Detail Pesan', text: 'Kamu telah menyelesaikan seluruh modul pembelajaran. Terus belajar dan semangat!', fontSize: 13 }),
+      el('button', { x: 20, y: 72, w: 60, h: 10, icon: '🔄', label: 'Ulangi Pembelajaran', text: '🔄  Ulangi Pembelajaran', color: '#7c3aed', radius: 12 }),
+    ];
+    if (hasNavbar) penutupElements.push(navbarBottom());
+
+    pages.push({ label: 'Penutup', bgColor: '#0f0e1a', elements: penutupElements });
+
+    return { pages, navbarStyle: hasNavbar ? 'bottom-bar' : undefined };
+  },
+};
+
 // ── ALL PAGE TYPES ───────────────────────────────────────────
 
 export const ALL_PAGE_TYPES: PageTypeDefinition[] = [
+  PEMBUKA_PETUNJUK,
   KUIS_PG,
   KUIS_BS,
   GAME_INTERAKTIF,
   MATERI,
   FLASHCARD,
+  DISKUSI,
   TANTANGAN_TIMER,
+  REFLEKSI_PENUTUP,
 ];
 
 export const PAGE_TYPE_CATEGORIES = [

@@ -18,9 +18,6 @@ import { ALPINE_INLINE } from './alpine-runtime';
 import { MODUL_TYPE_MAP } from '@/lib/shared/module-types';
 import { parseTimerSeconds } from '@/lib/shared/constants';
 
-// ── Re-export for backward compat ────────────────────────────
-export const MODUL_TYPE_COLOR_MAP = MODUL_TYPE_MAP;
-
 // ── Render one element as HTML string (same as before for static elements) ──
 export function renderElHTML(el: CanvaElement): string {
   const pos = `position:absolute;left:${el.x}%;top:${el.y}%;width:${el.w}%;height:${el.h}%;opacity:${(el.opacity || 100) / 100}`;
@@ -250,13 +247,55 @@ export function exportSlideshowHTML({ pages, ratio }: ExportSlideshowOptions): s
     setupQuizHandlers() {
       // Quiz handling is done via @click on quiz elements
     },
-    answerQuiz(slideIdx, choiceIdx, correctIdx) {
+    answerQuiz(slideIdx, choice) {
       if (this.quizAnswered[slideIdx] !== undefined) return;
-      this.quizAnswered[slideIdx] = choiceIdx;
-      if (choiceIdx === correctIdx) this.score++;
-      // Auto-advance after delay
+      this.quizAnswered[slideIdx] = choice;
+      var qd = this.quizData[slideIdx];
+      if (!qd) return;
+      var isCorrect = false;
+      if (qd.type === 'pg') {
+        isCorrect = (choice === qd.correct);
+      } else if (qd.type === 'bs') {
+        isCorrect = (choice === qd.correct);
+      }
+      if (isCorrect) this.score++;
+
+      // Visual feedback — highlight correct/wrong buttons
       var self = this;
-      setTimeout(function() { self.next(); }, 800);
+      try {
+        var slideEl = document.querySelectorAll('.slide')[slideIdx];
+        if (slideEl) {
+          var btns = slideEl.querySelectorAll('[data-el="button"]');
+          var letters = 'ABCDEF';
+          btns.forEach(function(btn) {
+            var lbl = btn.getAttribute('data-label') || '';
+            var inner = btn.querySelector('div');
+            if (!inner) return;
+            inner.style.transition = 'all .3s';
+            if (qd.type === 'pg') {
+              var correctLabel = 'Opsi ' + letters[qd.correct];
+              if (lbl === correctLabel) {
+                inner.style.background = '#22c55e';
+                inner.style.boxShadow = '0 4px 16px rgba(34,197,94,.4)';
+              } else if (lbl.match(/^Opsi [A-Z]$/)) {
+                inner.style.opacity = '0.4';
+              }
+            } else if (qd.type === 'bs') {
+              var correctLabel = qd.correct ? 'Benar' : 'Salah';
+              if (lbl === correctLabel) {
+                inner.style.background = '#22c55e';
+                inner.style.boxShadow = '0 4px 16px rgba(34,197,94,.4)';
+              } else {
+                inner.style.background = '#ef4444';
+                inner.style.boxShadow = '0 4px 16px rgba(239,68,68,.4)';
+              }
+            }
+          });
+        }
+      } catch(e) {}
+
+      // Auto-advance after delay
+      setTimeout(function() { self.next(); }, 1200);
     },
 
     // Button handler
@@ -266,9 +305,19 @@ export function exportSlideshowHTML({ pages, ratio }: ExportSlideshowOptions): s
         this.restart();
         return;
       }
-      // If quiz page, let quiz handler deal with it
+      // If quiz page, dispatch to answerQuiz
       var origLabel = el.getAttribute('data-label') || '';
-      if (this.quizData[this.current] && (origLabel.match(/^Opsi [A-Z]$/) || origLabel === 'Benar' || origLabel === 'Salah')) return;
+      if (this.quizData[this.current]) {
+        var pgMatch = origLabel.match(/^Opsi ([A-Z])$/);
+        if (pgMatch) {
+          var letters = 'ABCDEF';
+          var idx = letters.indexOf(pgMatch[1]);
+          if (idx >= 0) this.answerQuiz(this.current, idx);
+          return;
+        }
+        if (origLabel === 'Benar') { this.answerQuiz(this.current, true); return; }
+        if (origLabel === 'Salah') { this.answerQuiz(this.current, false); return; }
+      }
       // Score on question pages
       if (this.current > 0 && this.current < this.total - 1 && !this.answeredSlides[this.current]) {
         var hasScoreEl = el.closest('.slide') && el.closest('.slide').querySelector('[data-el="score"]');
