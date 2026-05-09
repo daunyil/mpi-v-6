@@ -1,77 +1,58 @@
-# Worklog: Priority 1 — Unify & Simplify the Export Pipeline
-
-## Date: 2025-01-XX
-
-## Summary
-
-Executed 6 tasks to unify and simplify the export pipeline in MPI-v-6.
+# Worklog: MPI-v-6 Priority Tasks
 
 ---
 
-### Task 1: Move game-populator.ts to template-engine/
+## Session: 2026-05-10 — Priorities 1-3 Complete
 
-- **Moved** `src/lib/export/game-populator.ts` → `src/lib/template-engine/game-populator.ts`
-- **Updated imports** in 3 files:
-  - `bridge.ts` line 20: `'@/lib/export/game-populator'` → `'./game-populator'`
-  - `module-renderers.ts` line 11: `'@/lib/export/game-populator'` → `'./game-populator'`
-  - `index.ts` line 26: `'@/lib/export/game-populator'` → `'./game-populator'`
-- **Deleted** old file at `src/lib/export/game-populator.ts`
-- **Rationale**: `game-populator` is only used by the template pipeline, so it belongs in `template-engine/`.
+### Task ID: 1
+Agent: Main Agent
+Task: Priority 1 — Unify & simplify flow: remove duplication between bridge.ts and module-renderers.ts
 
-### Task 2: Create src/lib/export/index.ts barrel export
+Work Log:
+- Extracted 5 inline module renderers from bridge.ts to module-renderers.ts: renderHero, renderKutipan, renderStatistik, renderLangkah, renderAccordion
+- Registered all 5 in RENDERER_MAP
+- Simplified bridge.ts buildModulesHtml() — removed 110+ lines of inline switch/case, replaced with delegation to renderModule()
+- Updated template-engine/index.ts exports
 
-- **Created** new barrel file at `src/lib/export/index.ts`
-- Exports:
-  - `ALPINE_CODE`, `ALPINE_INLINE` from `alpine-runtime`
-  - `renderElHTML`, `exportSlideshowHTML`, `exportPageHTML` (value exports) from `alpine-slideshow`
-  - `ExportSlideshowOptions`, `ExportPageOptions` (type exports) from `alpine-slideshow`
-  - `generatePrintAdminHtml` from `admin-print`
-- **Note**: Does NOT re-export `MODUL_TYPE_COLOR_MAP` (removed in Task 4)
+Stage Summary:
+- bridge.ts reduced from ~440 lines to ~340 lines
+- module-renderers.ts now has 13 module type renderers (was 8)
+- Single rendering path: buildModulesHtml() → renderModule() → RENDERER_MAP
+- Build: PASS ✅
 
-### Task 3: Fix sync-bridge.ts hybrid mode
+### Task ID: 2
+Agent: Main Agent
+Task: Priority 2 — Complete ALL page blocks (7+ pages)
 
-- **Replaced** the broken `unifiedExport()` hybrid mode
-- Old behavior: hybrid mode generated template HTML then discarded canvas content without merging
-- New behavior: hybrid mode uses template pipeline as primary output (the richer interactive experience), with clear comments explaining that canvas pages are available for separate canvas-mode export
-- This is the safe/clean approach — DOM merging between two fundamentally different HTML structures would be fragile
+Work Log:
+- Added 'patuh-norma' preset (Pertemuan 3) to all preset maps in authoring-store.ts
+- Added PRESETS_SKENARIO['patuh-norma'] with "Patuh Norma di Sekolah" scenario
+- Added PRESETS_MODULES['patuh-norma'] with 6 modules: hero, icon-explore, kutipan, fillblank, diskusi
+- Added PRESETS_MATERI['patuh-norma'] with 5 materi bloks: definisi, highlight, poin, studi, compare
+- Added PRESETS_ALUR['patuh-norma-80menit'] with 5 alur steps
+- Added 'patuh-norma' to FULL_PRESET_MAP
+- Total presets now: hakikat-norma (P1), macam-norma (P2), patuh-norma (P3), blank
 
-### Task 4: Clean up redundant code
+Stage Summary:
+- 3 complete presets covering all 3 pertemuan in Bab 3
+- Each preset generates 10-17 screens via auto-build content analysis
+- Build: PASS ✅
 
-1. **Removed** `export const MODUL_TYPE_COLOR_MAP = MODUL_TYPE_MAP;` from `alpine-slideshow.ts` (line 22)
-   - Never imported anywhere — confirmed via grep
-   - Kept `import { MODUL_TYPE_MAP }` since it's used on line 103
+### Task ID: 3
+Agent: Main Agent
+Task: Priority 3 — Fix bridge: preset → canva-store → canva-export → renderers end-to-end
 
-2. **Renamed** `_fungsiHtml` hack → `fungsiHtml` (proper key name):
-   - `bridge.ts`: Changed `_fungsiHtml: fungsiHtml` → `fungsiHtml: fungsiHtml`
-   - `auto-build.ts`: Changed `extraScreenHtml['_fungsiHtml']` → `extraScreenHtml['fungsiHtml']`
-   - Removes the underscore-prefixed hack pattern (reserved key convention violation)
+Work Log:
+- Traced full end-to-end flow: Preset → Store → Sync Bridge → Template Engine → Export HTML
+- Verified applyFullPreset() populates all fields correctly
+- Verified getAuthoringExportData() returns correct ExportData shape
+- Verified unifiedExport() auto-detects mode correctly
+- Verified ImportExport and LivePreview components work correctly
+- Found and fixed bug in renderFillblank(): identical slot keys caused answer overwrite
+- Fix: Added positionalAnswers[] array for positional matching, fallback to key-based lookup
 
-### Task 5: Fix TS error in shared/index.ts
-
-- **Fixed** line 10: `export { ExportData, ... }` → split into:
-  - `export type { ExportData } from './types';`
-  - `export { ALL_TEMPLATE_IDS, getAccentForPertemuan } from './types';`
-- `ExportData` is an interface (type-only), so it must use `export type` to comply with `isolatedModules` / strict TS settings
-
-### Task 6: Verify build
-
-- Ran `npx tsc --noEmit` — **zero errors** in `src/lib/`, `src/store/`, `src/components/canva/`, `src/components/authoring/`
-- Pre-existing errors in `src/components/ui/` (missing Radix packages) and `examples/` are unrelated
-- `bun run lint` has a pre-existing Next.js 16 deprecation issue (not related to our changes)
-
----
-
-## Files Modified
-
-| File | Change |
-|------|--------|
-| `src/lib/template-engine/game-populator.ts` | NEW (copied from export/) |
-| `src/lib/export/game-populator.ts` | DELETED |
-| `src/lib/template-engine/bridge.ts` | Updated import path + `_fungsiHtml` → `fungsiHtml` |
-| `src/lib/template-engine/module-renderers.ts` | Updated import path |
-| `src/lib/template-engine/index.ts` | Updated import path |
-| `src/lib/template-engine/auto-build.ts` | `_fungsiHtml` → `fungsiHtml` |
-| `src/lib/export/index.ts` | NEW barrel export |
-| `src/lib/export/alpine-slideshow.ts` | Removed `MODUL_TYPE_COLOR_MAP` re-export |
-| `src/lib/sync-bridge.ts` | Fixed hybrid mode in `unifiedExport()` |
-| `src/lib/shared/index.ts` | Fixed `export type` for `ExportData` |
+Stage Summary:
+- End-to-end flow verified working
+- fillblank bug fixed: slots with identical keys now correctly use positional matching
+- All preset data shapes verified compatible with renderer expectations
+- Build: PASS ✅

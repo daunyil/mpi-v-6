@@ -197,9 +197,14 @@ export function renderFillblank(mod: ModData): string {
   const jawaban = (mod.jawaban as Array<{ slot?: string; benar?: string }>) || [];
 
   // Build a map: slot → benar
+  // NOTE: If multiple jawaban entries share the same slot key (e.g. all '___'),
+  // the map would overwrite. We keep it for unique-slot lookups but also
+  // store the answers positionally for the common same-slot case.
   const answerMap: Record<string, string> = {};
+  const positionalAnswers: string[] = [];
   for (const j of jawaban) {
     if (j.slot) answerMap[j.slot] = j.benar || '';
+    positionalAnswers.push(j.benar || '');
   }
 
   // Unique ID for this fillblank instance
@@ -211,7 +216,9 @@ export function renderFillblank(mod: ModData): string {
     const slotKey = slotName.trim() || `slot${slotIndex}`;
     const inputId = `${fbId}-inp-${slotIndex}`;
     const feedbackId = `${fbId}-fb-${slotIndex}`;
-    const correctAnswer = answerMap[slotKey] || answerMap[Object.keys(answerMap)[slotIndex]] || '';
+    // Prefer positional match (handles identical slot keys like '___'),
+    // fall back to key-based lookup
+    const correctAnswer = positionalAnswers[slotIndex] || answerMap[slotKey] || '';
 
     const html = `<span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle">
       <input id="${inputId}" type="text" data-answer="${esc(correctAnswer)}" placeholder="${esc(slotKey)}" style="width:120px;padding:4px 8px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.06);color:var(--text);font-size:.84rem;text-align:center;font-family:inherit" />
@@ -461,6 +468,128 @@ export function renderIconExplore(mod: ModData): string {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// 8. HERO BANNER  (type: 'hero')
+// ═══════════════════════════════════════════════════════════════
+// Data shape: { type, title, subjudul?, ikon?, gradient?, chips?, cta? }
+// A visually prominent banner card for opening sections.
+// ═══════════════════════════════════════════════════════════════
+export function renderHero(mod: ModData): string {
+  const info = getModuleTypeInfo('hero');
+  const title = String(mod.title || info.label);
+  const subjudul = String(mod.subjudul || '');
+  const ikon = String(mod.ikon || info.icon);
+  return `<div class="hero-banner" style="background:linear-gradient(135deg,${info.color}33,${info.color}11)">
+    <div class="hero-glow"></div>
+    <div class="hero-icon">${ikon}</div>
+    <div class="hero-title">${esc(title)}</div>
+    ${subjudul ? `<div class="hero-sub">${esc(subjudul)}</div>` : ''}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 9. KUTIPAN  (type: 'kutipan')
+// ═══════════════════════════════════════════════════════════════
+// Data shape: { type, title, teks, sumber?, jabatan?, warna? }
+// A stylized quotation card with source attribution.
+// ═══════════════════════════════════════════════════════════════
+export function renderKutipan(mod: ModData): string {
+  const info = getModuleTypeInfo('kutipan');
+  const title = String(mod.title || info.label);
+  const teks = String(mod.teks || '');
+  const sumber = String(mod.sumber || '');
+  const jabatan = String(mod.jabatan || '');
+  const warna = String(mod.warna || info.color);
+  return `<div class="card" style="border-left:4px solid ${warna};background:${warna}0a">
+    <div style="font-size:2rem;margin-bottom:8px;opacity:.7">❝</div>
+    <div style="font-size:1rem;font-style:italic;line-height:1.7;margin-bottom:12px">${esc(teks)}</div>
+    ${sumber ? `<div style="font-weight:800;color:${warna};font-size:.85rem">— ${esc(sumber)}${jabatan ? ', ' + esc(jabatan) : ''}</div>` : ''}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 10. STATISTIK  (type: 'statistik')
+// ═══════════════════════════════════════════════════════════════
+// Data shape: { type, title, items: Array<{icon?, angka?, satuan?, label?, warna?, judul?, isi?}> }
+// A grid of statistics cards with numbers and units.
+// ═══════════════════════════════════════════════════════════════
+export function renderStatistik(mod: ModData): string {
+  const info = getModuleTypeInfo('statistik');
+  const title = String(mod.title || info.label);
+  const items = (mod.items as Array<{ icon?: string; angka?: string; satuan?: string; label?: string; warna?: string; judul?: string; isi?: string }>) || [];
+  if (items.length === 0) {
+    return `<div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
+      <div style="font-weight:900;font-size:.95rem;color:${info.color}">${info.icon} ${esc(title)}</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:6px">Belum ada data statistik.</div>
+    </div>`;
+  }
+  return `<div class="card"><div class="h2">${info.icon} <span class="hl">${esc(title)}</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:14px">
+      ${items.map(it => `<div style="text-align:center;padding:14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px">
+        <div style="font-size:1.4rem;margin-bottom:4px">${esc(it.icon || '📊')}</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:1.5rem;color:${esc(it.warna || info.color)}">${esc(it.angka || '0')}</div>
+        <div style="font-size:.7rem;font-weight:800;color:var(--muted)">${esc(it.satuan || '')}</div>
+        <div style="font-size:.78rem;font-weight:700;margin-top:4px">${esc(it.label || it.judul || '')}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 11. LANGKAH  (type: 'langkah')
+// ═══════════════════════════════════════════════════════════════
+// Data shape: { type, title, langkah: Array<{icon, judul, isi}> }
+// A step-by-step procedure with numbered items.
+// ═══════════════════════════════════════════════════════════════
+export function renderLangkah(mod: ModData): string {
+  const info = getModuleTypeInfo('langkah');
+  const title = String(mod.title || info.label);
+  const langkah = (mod.langkah as Array<{ icon: string; judul: string; isi: string }>) || [];
+  if (langkah.length === 0) {
+    return `<div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
+      <div style="font-weight:900;font-size:.95rem;color:${info.color}">${info.icon} ${esc(title)}</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:6px">Belum ada langkah.</div>
+    </div>`;
+  }
+  return `<div class="card"><div class="h2">${info.icon} <span class="hl">${esc(title)}</span></div>
+    <div style="margin-top:14px">
+      ${langkah.map((s, si) => `<div style="display:flex;gap:12px;padding:10px 0;${si < langkah.length - 1 ? 'border-bottom:1px solid var(--border)' : ''}">
+        <div style="width:32px;height:32px;border-radius:50%;background:${info.color}22;color:${info.color};display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:900;flex-shrink:0">${si + 1}</div>
+        <div>
+          <div style="font-weight:800;font-size:.88rem">${esc(s.icon)} ${esc(s.judul)}</div>
+          <div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-top:2px">${esc(s.isi)}</div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 12. ACCORDION  (type: 'accordion')
+// ═══════════════════════════════════════════════════════════════
+// Data shape: { type, title, items: Array<{judul?, isi?, icon?}> }
+// Collapsible FAQ-style sections using <details>/<summary>.
+// ═══════════════════════════════════════════════════════════════
+export function renderAccordion(mod: ModData): string {
+  const info = getModuleTypeInfo('accordion');
+  const title = String(mod.title || info.label);
+  const items = (mod.items as Array<{ judul?: string; isi?: string; icon?: string }>) || [];
+  if (items.length === 0) {
+    return `<div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
+      <div style="font-weight:900;font-size:.95rem;color:${info.color}">${info.icon} ${esc(title)}</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:6px">Belum ada item.</div>
+    </div>`;
+  }
+  return `<div class="card"><div class="h2">${info.icon} <span class="hl">${esc(title)}</span></div>
+    <div style="margin-top:14px">
+      ${items.map((it, si) => `<details style="border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:12px 14px;cursor:pointer;font-weight:800;font-size:.88rem;background:rgba(255,255,255,.03)">${esc(it.icon || '📌')} ${esc(it.judul || `Item ${si + 1}`)}</summary>
+        <div style="padding:0 14px 14px;font-size:.84rem;color:var(--muted);line-height:1.7">${esc(it.isi || '')}</div>
+      </details>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // RENDERER DISPATCH — Maps module type → render function
 // ═══════════════════════════════════════════════════════════════
 const RENDERER_MAP: Record<string, (mod: ModData) => string> = {
@@ -472,6 +601,11 @@ const RENDERER_MAP: Record<string, (mod: ModData) => string> = {
   'tab-icons':   renderTabIcons,
   'icon-explore': renderIconExplore,
   comparison:    renderComparison,
+  hero:          renderHero,
+  kutipan:       renderKutipan,
+  statistik:     renderStatistik,
+  langkah:       renderLangkah,
+  accordion:     renderAccordion,
 };
 
 /** Check if a module type has a dedicated renderer (module or game) */

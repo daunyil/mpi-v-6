@@ -151,6 +151,13 @@ const PRESETS_META: Record<string, MetaPreset> = {
     subjudul: 'Apa saja jenis norma yang mengatur kehidupan kita?',
     ikon: '\uD83D\uDCDC', durasi: '2 \u00D7 40 menit', namaBab: 'Macam-Macam Norma',
   },
+  'patuh-norma': {
+    id: 'patuh-norma', label: 'Bab 3 – Pertemuan 3: Perilaku Patuh terhadap Norma',
+    mapel: 'PPKn', kelas: 'VII', kurikulum: 'Kurikulum Merdeka',
+    judulPertemuan: 'Pertemuan 3 – Perilaku Patuh terhadap Norma',
+    subjudul: 'Bagaimana menerapkan norma dalam kehidupan sehari-hari?',
+    ikon: '\u2696\uFE0F', durasi: '2 \u00D7 40 menit', namaBab: 'Perilaku Patuh terhadap Norma',
+  },
   blank: {
     id: 'blank', label: 'Kosong – Mulai dari Nol',
     mapel: '', kelas: '', kurikulum: 'Kurikulum Merdeka',
@@ -210,6 +217,16 @@ const PRESETS_ALUR: Record<string, AlurPreset> = {
       { fase: 'Penutup', durasi: '15 menit', judul: 'Kuis Tim & Refleksi', deskripsi: 'Kuis tim 5 soal antar kelompok. Siswa mengisi refleksi akhir. Guru memberi umpan balik dan menutup pembelajaran.' },
     ],
   },
+  'patuh-norma-80menit': {
+    id: 'patuh-norma-80menit', label: 'Patuh Norma \u2013 2\u00D740 menit',
+    steps: [
+      { fase: 'Pendahuluan', durasi: '10 menit', judul: 'Review & Apersepsi', deskripsi: 'Guru mereview pertemuan sebelumnya tentang macam-macam norma. Siswa mengingat kembali 4 jenis norma dan sanksinya.' },
+      { fase: 'Inti', durasi: '20 menit', judul: 'Penerapan Norma di 4 Lingkungan', deskripsi: 'Siswa mengeksplorasi contoh penerapan norma di lingkungan keluarga, sekolah, masyarakat, dan negara melalui ikon interaktif.' },
+      { fase: 'Inti', durasi: '15 menit', judul: 'Budaya Patuh & Diskusi', deskripsi: 'Diskusi kelompok: Mengapa budaya patuh norma penting? Siswa menuliskan contoh nyata dari lingkungan sekitar.' },
+      { fase: 'Inti', durasi: '20 menit', judul: 'Kuis 10 Soal', deskripsi: 'Kuis pengetahuan 10 soal pilihan ganda mencakup seluruh materi Bab 3. Siswa mengerjakan secara individual.' },
+      { fase: 'Penutup', durasi: '15 menit', judul: 'Refleksi & Portofolio', deskripsi: 'Siswa mengisi refleksi akhir bab dan menulis rencana aksi patuh norma. Guru memberi umpan balik dan menutup pembelajaran.' },
+    ],
+  },
   blank: { id: 'blank', label: 'Kosong – Isi Manual', steps: [] },
 };
 
@@ -236,6 +253,7 @@ const PRESETS_KUIS: Record<string, KuisPreset> = {
 const FULL_PRESET_MAP: Record<string, { meta: string; cp: string; tp: string; atp: string; alur: string; kuis: string }> = {
   'hakikat-norma': { meta: 'hakikat-norma', cp: 'ppkn-smp-bab3', tp: 'bab3-full', atp: 'bab3-3pertemuan', alur: 'hakikat-norma-80menit', kuis: 'norma-10-soal' },
   'macam-norma': { meta: 'macam-norma', cp: 'ppkn-smp-bab3', tp: 'bab3-full', atp: 'bab3-3pertemuan', alur: 'hakikat-norma-80menit', kuis: 'norma-10-soal' },
+  'patuh-norma': { meta: 'patuh-norma', cp: 'ppkn-smp-bab3', tp: 'bab3-full', atp: 'bab3-3pertemuan', alur: 'patuh-norma-80menit', kuis: 'norma-10-soal' },
   blank: { meta: 'blank', cp: 'blank', tp: 'blank', atp: 'blank', alur: 'blank', kuis: 'blank' },
 };
 
@@ -286,6 +304,21 @@ const PRESETS_SKENARIO: Record<string, Array<Record<string, unknown>>> = {
       ],
     },
   ],
+  'patuh-norma': [
+    {
+      title: 'Patuh Norma di Sekolah',
+      bg: 'sbg-kelas',
+      charEmoji: '\u{1F9D1}\u200D\u{1F3EB}', charColor: '#34d399', charPants: '#f9c82e',
+      choicePrompt: 'Apa yang akan kamu lakukan?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Di sekolah, jam istirahat tiba. Beberapa temanmu berlari di koridor, makan di perpustakaan, dan membuang sampah sembarangan. Guru tidak sedang mengawasi.' },
+      ],
+      choices: [
+        { icon: '\u{1F44D}', label: 'Tetap patuh aturan', detail: 'Ikuti tata tertib sekolah meskipun tidak diawasi', good: true, pts: 10, level: 'good', norma: 'Patuh norma berarti mengikuti aturan meskipun tidak ada pengawasan langsung', resultTitle: 'Hebat!', resultBody: 'Kamu menunjukkan karakter patuh norma yang kuat. Inilah yang dimaksud kesadaran hukum sejati!', consequences: [{ icon: '\u2705', text: 'Menjadi teladan bagi teman' }, { icon: '\u2705', text: 'Sekolah tetap tertib dan nyaman' }] },
+        { icon: '\u{1F937}', label: 'Ikuti teman-teman', detail: 'Lakukan saja yang mereka lakukan', good: false, pts: 2, level: 'bad', norma: 'Ikut melanggar norma bukan sikap yang benar meskipun banyak yang melakukannya', resultTitle: 'Kurang Tepat', resultBody: 'Ikut melanggar norma bukan solusi. Budaya patuh dimulai dari diri sendiri, meskipun orang lain melanggar.', consequences: [{ icon: '\u26A0\uFE0F', text: 'Ikut melanggar membuat situasi makin buruk' }, { icon: '\u26A0\uFE0F', text: 'Norma kehilangan kekuatannya jika tidak dipatuhi' }] },
+      ],
+    },
+  ],
   blank: [],
 };
 
@@ -315,6 +348,22 @@ const PRESETS_MODULES: Record<string, Array<Record<string, unknown>>> = {
     { type: 'roda', title: 'Roda Norma', opsi: ['Norma Agama', 'Norma Kesusilaan', 'Norma Kesopanan', 'Norma Hukum', 'Adat Istiadat', 'Norma Kesusilaan'] },
     { type: 'diskusi', title: 'Diskusi Kelompok', pertanyaan: 'Berikan 1 contoh pelanggaran norma di sekolah dan jelaskan sanksi yang sesuai untuk masing-masing jenis norma!', durasi: '05:00', petunjuk: 'Diskusikan dalam kelompok dan tuliskan kesimpulan kalian!' },
   ],
+  'patuh-norma': [
+    { type: 'hero', title: 'Perilaku Patuh terhadap Norma', subjudul: 'Menerapkan norma dalam kehidupan sehari-hari', ikon: '\u2696\uFE0F', gradient: 'ocean', chips: ['PPKn', 'Kelas VII', 'Bab 3'], cta: 'Mulai Belajar' },
+    { type: 'icon-explore', title: 'Penerapan Norma di 4 Lingkungan', intro: 'Ketuk setiap ikon untuk melihat contoh penerapan norma di berbagai lingkungan.', items: [
+      { icon: '\u{1F3E0}', label: 'Keluarga', color: '#f9c82e', desc: 'Menghormati orang tua, membantu pekerjaan rumah, makan bersama, beribadah bersama, dan jujur kepada keluarga.' },
+      { icon: '\u{1F3EB}', label: 'Sekolah', color: '#3ecfcf', desc: 'Mengikuti tata tertib, menghormati guru, tidak mencontek, datang tepat waktu, dan menjaga kebersihan.' },
+      { icon: '\u{1F3D9}\uFE0F', label: 'Masyarakat', color: '#34d399', desc: 'Gotong royong, antri di tempat umum, tidak buang sampah sembarangan, dan menghormati tetangga.' },
+      { icon: '\u{1F3DB}\uFE0F', label: 'Negara', color: '#a78bfa', desc: 'Membayar pajak, mematuhi hukum, mengikuti pemilu, dan menjaga keutuhan NKRI.' },
+    ] },
+    { type: 'kutipan', title: 'Pepatah', teks: 'Di mana bumi dipijak, di sana langit dijunjung. Artinya, kita harus menghormati norma dan aturan yang berlaku di tempat kita berada.', sumber: 'Pepatah Melayu', warna: '#f9c82e' },
+    { type: 'fillblank', title: 'Isi Titik-Titik', teks: 'Patuh terhadap norma berarti [___] aturan yang berlaku meskipun tidak ada [___]. Budaya patuh norma menjadikan kita warga negara yang [___].', jawaban: [
+      { slot: '___', benar: 'mematuhi' },
+      { slot: '___', benar: 'pengawasan' },
+      { slot: '___', benar: 'baik' },
+    ] },
+    { type: 'diskusi', title: 'Diskusi Kelompok', pertanyaan: 'Berikan 2 contoh nyata dari lingkunganmu sendiri di mana seseorang menunjukkan perilaku patuh terhadap norma. Apa dampak positifnya?', durasi: '05:00', petunjuk: 'Diskusikan dalam kelompok dan tuliskan kesimpulan kalian!' },
+  ],
   blank: [],
 };
 
@@ -332,6 +381,13 @@ const PRESETS_MATERI: Record<string, { blok: MateriBlok[] }> = {
     { tipe: 'tabel', judul: 'Perbandingan 4 Jenis Norma', baris: [['Jenis Norma', 'Sumber', 'Sifat', 'Contoh Sanksi'], ['Agama', 'Tuhan/Wahyu', 'Mutlak', 'Dosa, kutukan'], ['Kesusilaan', 'Hati Nurani', 'Mutlak', 'Rasa bersalah, menyesal'], ['Kesopanan', 'Masyarakat', 'Relatif', 'Cemoohan, dikucilkan'], ['Hukum', 'Negara/UUD', 'Memaksa', 'Denda, penjara']] },
     { tipe: 'highlight', judul: 'Norma Hukum Paling Tegas', isi: 'Di antara keempat jenis norma, norma hukum memiliki sanksi paling tegas karena ditegakkan oleh negara. Pelanggaran norma hukum dapat dikenai denda, penjara, atau sanksi formal lainnya.', icon: '⚖️', warna: '#ff6b6b' },
     { tipe: 'poin', judul: 'Contoh Pelanggaran per Jenis Norma', butir: ['Agama: Tidak beribadah, berbohong, mencuri', 'Kesusilaan: Melakukan tindakan tidak bermoral', 'Kesopanan: Tidak sopan kepada guru, membuang sampah sembarangan', 'Hukum: Mencuri, melanggar lampu merah, korupsi'] },
+  ] },
+  'patuh-norma': { blok: [
+    { tipe: 'definisi', judul: 'Perilaku Patuh terhadap Norma', isi: 'Perilaku patuh terhadap norma adalah sikap menaati dan menghormati aturan yang berlaku dalam kehidupan bermasyarakat, berbangsa, dan bernegara secara sadar dan sukarela, bukan karena paksaan atau rasa takut.' },
+    { tipe: 'highlight', judul: 'Budaya Patuh Norma', isi: 'Budaya patuh norma terbentuk ketika kepatuhan terhadap aturan menjadi kebiasaan yang dilakukan secara sadar oleh seluruh anggota masyarakat. Ini bukan sekadar ketaatan karena takut hukuman, melainkan kesadaran bahwa norma melindungi hak dan kepentingan bersama.', icon: '\u{1F331}', warna: '#34d399' },
+    { tipe: 'poin', judul: 'Contoh Perilaku Patuh di 4 Lingkungan', butir: ['Keluarga: Menghormati orang tua, jujur, membantu pekerjaan rumah', 'Sekolah: Mematuhi tata tertib, menghormati guru, tidak mencontek', 'Masyarakat: Antri, gotong royong, menjaga kebersihan', 'Negara: Membayar pajak, mematuhi hukum, mengikuti pemilu'] },
+    { tipe: 'studi', judul: 'Studi Kasus: Siswa Teladan', karakter: '\u{1F9D1}\u200D\u{1F3EB}', situasi: 'Rudi selalu datang tepat waktu, memakai seragam lengkap, dan mengikuti tata tertib sekolah meskipun banyak teman yang melanggar. Suatu hari, teman-temannya mengajak Rudi untuk membolos bersama.', pertanyaan: 'Apa yang sebaiknya dilakukan Rudi? Mengapa?', pesan: 'Patuh norma berarti konsisten mematuhi aturan, bahkan ketika tidak ada yang mengawasi.' },
+    { tipe: 'compare', judul: 'Patuh vs Melanggar Norma', kiri: { icon: '\u2705', judul: 'Patuh Norma', isi: 'Dihormati, dipercaya, lingkungan tertib, dilindungi hukum, menjadi teladan' }, kanan: { icon: '\u274C', judul: 'Melanggar Norma', isi: 'Dikucilkan, tidak dipercaya, lingkungan kacau, terkena sanksi, merugikan orang lain' } },
   ] },
   blank: { blok: [] },
 };

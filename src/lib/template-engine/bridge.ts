@@ -28,117 +28,36 @@ export type AuthoringExportData = ExportData;
 
 // ═══════════════════════════════════════════════════════════════
 // 1. MODULE HTML BUILDER
-// Iterates modules[], uses MODUL_TYPE_MAP for icon/color/label,
-// renders a card for each module. (Placeholder — flesh out in P5)
+// Delegates all module rendering to module-renderers.ts via
+// renderModule(). Each module type has its own dedicated renderer
+// function. To add a new module type: add render fn in
+// module-renderers.ts + register in RENDERER_MAP.
 // ═══════════════════════════════════════════════════════════════
 export function buildModulesHtml(modules: AutoBuildData['modules']): string {
   if (!modules || modules.length === 0) return '';
 
   return modules.map((mod, i) => {
     const type = String(mod.type || '');
+
+    // Delegate to the unified renderer pipeline
+    const rendered = renderModule(type, mod);
+    if (rendered) return rendered;
+
+    // Generic placeholder card for module types without a dedicated renderer
     const info = getModuleTypeInfo(type);
     const title = String(mod.title || info.label || `Modul ${i + 1}`);
-
-    // Module header card with type info
-    let body = '';
-
-    // Simple type-specific rendering for common types
-    switch (type) {
-      case 'hero': {
-        const subjudul = String(mod.subjudul || '');
-        const ikon = String(mod.ikon || info.icon);
-        body = `<div class="hero-banner" style="background:linear-gradient(135deg,${info.color}33,${info.color}11)">
-          <div class="hero-glow"></div>
-          <div class="hero-icon">${ikon}</div>
-          <div class="hero-title">${esc(title)}</div>
-          ${subjudul ? `<div class="hero-sub">${esc(subjudul)}</div>` : ''}
-        </div>`;
-        break;
-      }
-      case 'kutipan': {
-        const teks = String(mod.teks || '');
-        const sumber = String(mod.sumber || '');
-        const jabatan = String(mod.jabatan || '');
-        const warna = String(mod.warna || info.color);
-        body = `<div class="card" style="border-left:4px solid ${warna};background:${warna}0a">
-          <div style="font-size:2rem;margin-bottom:8px;opacity:.7">❝</div>
-          <div style="font-size:1rem;font-style:italic;line-height:1.7;margin-bottom:12px">${esc(teks)}</div>
-          ${sumber ? `<div style="font-weight:800;color:${warna};font-size:.85rem">— ${esc(sumber)}${jabatan ? ', ' + esc(jabatan) : ''}</div>` : ''}
-        </div>`;
-        break;
-      }
-      case 'statistik': {
-        const items = (mod.items as Array<{ icon?: string; angka?: string; satuan?: string; label?: string; warna?: string; judul?: string; isi?: string }>) || [];
-        if (items.length > 0) {
-          body = `<div class="card"><div class="h2">${info.icon} <span class="hl">${esc(title)}</span></div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:14px">
-              ${items.map(it => `<div style="text-align:center;padding:14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px">
-                <div style="font-size:1.4rem;margin-bottom:4px">${esc(it.icon || '📊')}</div>
-                <div style="font-family:'Fredoka One',cursive;font-size:1.5rem;color:${esc(it.warna || info.color)}">${esc(it.angka || '0')}</div>
-                <div style="font-size:.7rem;font-weight:800;color:var(--muted)">${esc(it.satuan || '')}</div>
-                <div style="font-size:.78rem;font-weight:700;margin-top:4px">${esc(it.label || it.judul || '')}</div>
-              </div>`).join('')}
-            </div>
-          </div>`;
-        }
-        break;
-      }
-      case 'langkah': {
-        const langkah = (mod.langkah as Array<{ icon: string; judul: string; isi: string }>) || [];
-        if (langkah.length > 0) {
-          body = `<div class="card"><div class="h2">${info.icon} <span class="hl">${esc(title)}</span></div>
-            <div style="margin-top:14px">
-              ${langkah.map((s, si) => `<div style="display:flex;gap:12px;padding:10px 0;${si < langkah.length - 1 ? 'border-bottom:1px solid var(--border)' : ''}">
-                <div style="width:32px;height:32px;border-radius:50%;background:${info.color}22;color:${info.color};display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:900;flex-shrink:0">${si + 1}</div>
-                <div>
-                  <div style="font-weight:800;font-size:.88rem">${esc(s.icon)} ${esc(s.judul)}</div>
-                  <div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-top:2px">${esc(s.isi)}</div>
-                </div>
-              </div>`).join('')}
-            </div>
-          </div>`;
-        }
-        break;
-      }
-      case 'accordion': {
-        const items = (mod.items as Array<{ judul?: string; isi?: string; icon?: string }>) || [];
-        if (items.length > 0) {
-          body = `<div class="card"><div class="h2">${info.icon} <span class="hl">${esc(title)}</span></div>
-            <div style="margin-top:14px">
-              ${items.map((it, si) => `<details style="border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden">
-                <summary style="padding:12px 14px;cursor:pointer;font-weight:800;font-size:.88rem;background:rgba(255,255,255,.03)">${esc(it.icon || '📌')} ${esc(it.judul || `Item ${si + 1}`)}</summary>
-                <div style="padding:0 14px 14px;font-size:.84rem;color:var(--muted);line-height:1.7">${esc(it.isi || '')}</div>
-              </details>`).join('')}
-            </div>
-          </div>`;
-        }
-        break;
-      }
-      default: {
-        // Use dedicated module renderers for types that have them
-        const rendered = renderModule(type, mod);
-        if (rendered) {
-          body = rendered;
-        } else {
-          // Generic placeholder card for all other module types
-          body = `<div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-              <span style="font-size:1.5rem">${info.icon}</span>
-              <div>
-                <div style="font-weight:900;font-size:.95rem;color:${info.color}">${esc(title)}</div>
-                <div style="font-size:.72rem;color:var(--muted);font-weight:600">${esc(info.desc)}</div>
-              </div>
-            </div>
-            <div style="font-size:.82rem;color:var(--muted);line-height:1.6">
-              🚧 Modul <strong>${esc(info.label)}</strong> — konten akan tersedia di versi lengkap.
-            </div>
-          </div>`;
-        }
-        break;
-      }
-    }
-
-    return body;
+    return `<div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:1.5rem">${info.icon}</span>
+        <div>
+          <div style="font-weight:900;font-size:.95rem;color:${info.color}">${esc(title)}</div>
+          <div style="font-size:.72rem;color:var(--muted);font-weight:600">${esc(info.desc)}</div>
+        </div>
+      </div>
+      <div style="font-size:.82rem;color:var(--muted);line-height:1.6">
+        🚧 Modul <strong>${esc(info.label)}</strong> — konten akan tersedia di versi lengkap.
+      </div>
+    </div>`;
   }).join('\n');
 }
 

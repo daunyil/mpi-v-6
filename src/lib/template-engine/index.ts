@@ -20,7 +20,7 @@ export { exportProject, buildModulesHtml, buildMateriHtml, buildGamesHtml, build
 export type { AuthoringExportData } from './bridge';
 
 // Module renderers
-export { renderModule, renderFlipcard, renderDiskusi, renderCallout, renderFillblank, hasModuleRenderer } from './module-renderers';
+export { renderModule, renderFlipcard, renderDiskusi, renderCallout, renderFillblank, renderHero, renderKutipan, renderStatistik, renderLangkah, renderAccordion, hasModuleRenderer } from './module-renderers';
 
 // Game populator
 export { populateGames, buildAllGamesHtml, hasGameRenderer } from './game-populator';
