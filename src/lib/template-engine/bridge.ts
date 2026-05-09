@@ -19,6 +19,8 @@ import type {
 import { exportWithTemplateSystem } from './auto-build';
 import { getModuleTypeInfo } from '@/lib/shared/module-types';
 import { FUNGSI_NORMA, esc } from '@/lib/shared/constants';
+import { renderModule } from './module-renderers';
+import { buildAllGamesHtml } from '@/lib/export/game-populator';
 
 // ── Authoring store data shape (subset we need) ──────────────
 // Uses the actual store types so consumers can pass store data
@@ -125,19 +127,25 @@ export function buildModulesHtml(modules: AutoBuildData['modules']): string {
         break;
       }
       default: {
-        // Generic placeholder card for all other module types
-        body = `<div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-            <span style="font-size:1.5rem">${info.icon}</span>
-            <div>
-              <div style="font-weight:900;font-size:.95rem;color:${info.color}">${esc(title)}</div>
-              <div style="font-size:.72rem;color:var(--muted);font-weight:600">${esc(info.desc)}</div>
+        // Use dedicated module renderers for types that have them
+        const rendered = renderModule(type, mod);
+        if (rendered) {
+          body = rendered;
+        } else {
+          // Generic placeholder card for all other module types
+          body = `<div class="card" style="border-left:4px solid ${info.color};background:${info.color}0a">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <span style="font-size:1.5rem">${info.icon}</span>
+              <div>
+                <div style="font-weight:900;font-size:.95rem;color:${info.color}">${esc(title)}</div>
+                <div style="font-size:.72rem;color:var(--muted);font-weight:600">${esc(info.desc)}</div>
+              </div>
             </div>
-          </div>
-          <div style="font-size:.82rem;color:var(--muted);line-height:1.6">
-            🚧 Modul <strong>${esc(info.label)}</strong> — konten akan tersedia di versi lengkap.
-          </div>
-        </div>`;
+            <div style="font-size:.82rem;color:var(--muted);line-height:1.6">
+              🚧 Modul <strong>${esc(info.label)}</strong> — konten akan tersedia di versi lengkap.
+            </div>
+          </div>`;
+        }
         break;
       }
     }
@@ -324,29 +332,12 @@ export function buildMateriHtml(materi: MateriState): string {
 
 // ═══════════════════════════════════════════════════════════════
 // 3. GAME HTML BUILDER
-// Iterates games[], renders a card for each. (Placeholder — P5)
+// Uses the game-populator to generate fully interactive game HTML.
+// Falls back to generic placeholder for unknown game types.
 // ═══════════════════════════════════════════════════════════════
 export function buildGamesHtml(games: AutoBuildData['games']): string {
   if (!games || games.length === 0) return '';
-
-  return games.map((game, i) => {
-    const type = String(game.type || '');
-    const info = getModuleTypeInfo(type);
-    const title = String(game.title || info.label || `Game ${i + 1}`);
-
-    return `<div class="card mt14" style="border-left:4px solid ${info.color};background:${info.color}0a">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <span style="font-size:1.5rem">${info.icon}</span>
-        <div>
-          <div style="font-weight:900;font-size:.95rem;color:${info.color}">${esc(title)}</div>
-          <div style="font-size:.72rem;color:var(--muted);font-weight:600">${esc(info.desc)}</div>
-        </div>
-      </div>
-      <div style="font-size:.82rem;color:var(--muted);line-height:1.6">
-        🎮 Game <strong>${esc(info.label)}</strong> — konten akan tersedia di versi lengkap.
-      </div>
-    </div>`;
-  }).join('\n');
+  return buildAllGamesHtml(games);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -377,10 +368,11 @@ export function buildExtraScreenHtml(modules: AutoBuildData['modules']): Record<
 
   // Group modules by type for specialized screens
   const comparisonMods = modules.filter(m => m.type === 'comparison' || m.type === 'icon-explore');
-  const flashcardMods = modules.filter(m => m.type === 'flashcard');
+  const flashcardMods = modules.filter(m => m.type === 'flashcard' || m.type === 'flipcard');
   const hotspotMods = modules.filter(m => m.type === 'hotspot-image');
   const sortingMods = modules.filter(m => m.type === 'matching' || m.type === 'memory' || m.type === 'truefalse' || m.type === 'sorting');
   const rodaMods = modules.filter(m => m.type === 'roda' || m.type === 'spinwheel');
+  const diskusiMods = modules.filter(m => m.type === 'diskusi');
 
   if (comparisonMods.length > 0) {
     extra['s-hubungan'] = buildModulesHtml(comparisonMods);
@@ -396,6 +388,9 @@ export function buildExtraScreenHtml(modules: AutoBuildData['modules']): Record<
   }
   if (rodaMods.length > 0) {
     extra['s-roda'] = buildModulesHtml(rodaMods);
+  }
+  if (diskusiMods.length > 0) {
+    extra['s-diskusi'] = buildModulesHtml(diskusiMods);
   }
 
   return extra;

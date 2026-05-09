@@ -5,18 +5,29 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useThemeStore } from '@/store/theme-store';
 import Toolbar from './Toolbar';
 import StatusBar from './StatusBar';
-import IconRail from './IconRail';
 import LeftPanel from './LeftPanel';
 import Stage from './Stage';
 import RightPanel from './RightPanel';
 
 export default function CanvaBuilder() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
+  const [rightCollapsed, setRightCollapsed] = useState(true);
   const themeMode = useThemeStore((s) => s.mode);
+  const selectedElIds = useCanvaStore((s) => s.selectedElIds);
 
   const handleMouseMove = useCallback((x: number, y: number) => {
     setMousePos({ x, y });
   }, []);
+
+  // Auto-expand right panel when element selected, auto-collapse when deselected
+  useEffect(() => {
+    if (selectedElIds.length > 0) {
+      setRightCollapsed(false);
+    } else {
+      setRightCollapsed(true);
+    }
+  }, [selectedElIds]);
 
   // Auto-load saved project on mount
   useEffect(() => {
@@ -127,17 +138,20 @@ export default function CanvaBuilder() {
 
         {/* Main builder row */}
         <div className="flex flex-1 min-h-0 overflow-hidden">
-          {/* Icon Rail */}
-          <IconRail />
-
-          {/* Left Panel */}
-          <LeftPanel />
+          {/* Left Panel (with collapse toggle) */}
+          <LeftPanel
+            isCollapsed={leftCollapsed}
+            onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
+          />
 
           {/* Stage Canvas Area */}
           <Stage onMouseMove={handleMouseMove} />
 
-          {/* Right Panel */}
-          <RightPanel />
+          {/* Right Panel (with collapse toggle) */}
+          <RightPanel
+            isCollapsed={rightCollapsed}
+            onToggleCollapse={() => setRightCollapsed(!rightCollapsed)}
+          />
         </div>
 
         {/* Status Bar */}

@@ -16,11 +16,42 @@ const TABS: { id: LeftTab; label: string; fullLabel: string }[] = [
   { id: 'templates', label: '📂', fullLabel: 'Template' },
 ];
 
-export default function LeftPanel() {
+export default function LeftPanel({ isCollapsed, onToggleCollapse }: { isCollapsed: boolean; onToggleCollapse: () => void }) {
   const { leftTab, setLeftTab } = useCanvaStore();
 
+  // ── Collapsed: thin icon strip ────────────────────────────────
+  if (isCollapsed) {
+    return (
+      <div className="flex flex-col items-center w-10 min-w-[40px] bg-[var(--bg-secondary)] border-r border-[var(--border-secondary)] py-2 relative">
+        {TABS.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => { setLeftTab(tab.id); onToggleCollapse(); }}
+            title={tab.fullLabel}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-all mb-0.5 ${
+              leftTab === tab.id
+                ? 'bg-[var(--accent-bg)] text-[var(--accent-text)] shadow-sm shadow-amber-500/10'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+        {/* Expand toggle */}
+        <button
+          onClick={onToggleCollapse}
+          title="Buka panel"
+          className="mt-auto w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-all"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    );
+  }
+
+  // ── Expanded: full panel ──────────────────────────────────────
   return (
-    <div className="w-60 min-w-[235px] flex flex-col bg-[var(--bg-secondary)] border-r border-[var(--border-secondary)] overflow-hidden">
+    <div className="w-60 min-w-[235px] flex flex-col bg-[var(--bg-secondary)] border-r border-[var(--border-secondary)] overflow-hidden relative">
       {/* Tab bar */}
       <div className="flex border-b border-[var(--border-secondary)] bg-[var(--bg-secondary)]">
         {TABS.map(tab => (
@@ -51,6 +82,15 @@ export default function LeftPanel() {
         {leftTab === 'layers' && <div className="p-2"><LayersContent /></div>}
         {leftTab === 'templates' && <div className="p-2"><TemplatesContent /></div>}
       </div>
+
+      {/* Collapse toggle button on the right edge */}
+      <button
+        onClick={onToggleCollapse}
+        title="Tutup panel"
+        className="absolute top-1/2 -translate-y-1/2 -right-3 z-10 w-6 h-8 flex items-center justify-center rounded-r-md bg-[var(--bg-secondary)] border border-l-0 border-[var(--border-secondary)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-all"
+      >
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
     </div>
   );
 }

@@ -18,3 +18,9 @@ export { autoBuildScreens, exportWithTemplateSystem } from './auto-build';
 // Bridge — unified data pipeline
 export { exportProject, buildModulesHtml, buildMateriHtml, buildGamesHtml, buildFungsiHtml, buildExtraScreenHtml } from './bridge';
 export type { AuthoringExportData } from './bridge';
+
+// Module renderers
+export { renderModule, renderFlipcard, renderDiskusi, renderCallout, renderFillblank, hasModuleRenderer } from './module-renderers';
+
+// Game populator
+export { populateGames, buildAllGamesHtml, hasGameRenderer } from '@/lib/export/game-populator';

@@ -6,18 +6,22 @@ export default function StatusBar({ mousePos }: { mousePos: { x: number; y: numb
   const {
     pages,
     currentPageIndex,
-    ratioId,
+    zoom,
   } = useCanvaStore();
 
   const page = pages[currentPageIndex];
-  const ratio = useCanvaStore(s => s.currentRatio());
 
   return (
-    <div className="flex items-center gap-4 px-3 py-1 bg-[var(--bg-secondary)] border-t border-[var(--border-secondary)] text-[11px] text-[var(--text-muted)]">
-      <span>📐 {ratio.w}×{ratio.h}</span>
-      <span>🧩 {page?.elements.length || 0} elemen</span>
-      <span>📄 {currentPageIndex + 1}/{pages.length} halaman</span>
-      <span className="ml-auto font-mono">x:{mousePos.x} y:{mousePos.y}</span>
+    <div className="flex items-center px-3 py-0.5 bg-[var(--bg-secondary)] border-t border-[var(--border-secondary)] text-[10px] text-[var(--text-muted)] select-none">
+      {/* Left: page info */}
+      <div className="flex items-center gap-2">
+        <span>📄 {currentPageIndex + 1}/{pages.length}</span>
+        <span>🧩 {page?.elements.length || 0}</span>
+      </div>
+      {/* Center: mouse position */}
+      <span className="mx-auto font-mono text-[9px]">x:{mousePos.x} y:{mousePos.y}</span>
+      {/* Right: zoom */}
+      <span className="font-mono">{Math.round(zoom * 100)}%</span>
     </div>
   );
 }

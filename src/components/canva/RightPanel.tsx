@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 
-export default function RightPanel() {
+export default function RightPanel({ isCollapsed, onToggleCollapse }: { isCollapsed: boolean; onToggleCollapse: () => void }) {
   const {
     pages,
     currentPageIndex,
@@ -37,8 +37,46 @@ export default function RightPanel() {
     reader.readAsDataURL(file);
   };
 
+  // ── Collapsed: thin icon strip ────────────────────────────────
+  if (isCollapsed) {
+    return (
+      <div className="flex flex-col items-center w-10 min-w-[40px] bg-[var(--bg-secondary)] border-l border-[var(--border-secondary)] py-2 relative">
+        <button
+          onClick={onToggleCollapse}
+          title="Buka panel properti"
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-all mb-0.5"
+        >
+          ⚙️
+        </button>
+        <button
+          onClick={onToggleCollapse}
+          title="Background"
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-all mb-0.5"
+        >
+          🖼️
+        </button>
+        <button
+          onClick={onToggleCollapse}
+          title="Layer"
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-all mb-0.5"
+        >
+          🔲
+        </button>
+        {/* Expand toggle */}
+        <button
+          onClick={onToggleCollapse}
+          title="Buka panel"
+          className="mt-auto w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-all"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+      </div>
+    );
+  }
+
+  // ── Expanded: full panel ──────────────────────────────────────
   return (
-    <div className="w-52 min-w-[200px] flex flex-col bg-[var(--bg-secondary)] border-l border-[var(--border-secondary)] overflow-y-auto custom-scrollbar">
+    <div className="w-52 min-w-[200px] flex flex-col bg-[var(--bg-secondary)] border-l border-[var(--border-secondary)] overflow-y-auto custom-scrollbar relative">
       {/* ── Background section ──────────────────────────────── */}
       <div className="p-2.5 border-b border-zinc-700/30">
         <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">🖼️ Background</div>
@@ -119,6 +157,15 @@ export default function RightPanel() {
         <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">🔲 Layer</div>
         <LayerMiniList />
       </div>
+
+      {/* Collapse toggle button on the left edge */}
+      <button
+        onClick={onToggleCollapse}
+        title="Tutup panel"
+        className="absolute top-1/2 -translate-y-1/2 -left-3 z-10 w-6 h-8 flex items-center justify-center rounded-l-md bg-[var(--bg-secondary)] border border-r-0 border-[var(--border-secondary)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-all"
+      >
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
     </div>
   );
 }
