@@ -158,3 +158,41 @@ Stage Summary:
 - Pro Mode preserves all existing functionality unchanged
 - Mode toggle persisted in localStorage
 - All keyboard shortcuts work in both modes
+
+---
+Task ID: 8
+Agent: main
+Task: Session continuation — Fix TS errors, implement sync-bridge, cleanup
+
+Work Log:
+- Verified workspace is healthy (git clean, build passes)
+- Confirmed Priorities 1-6 all completed by previous session
+- Fixed TypeScript errors in 6 component files:
+  - `FloatingActionBar.tsx`: config value type cast with Number()
+  - `LeftPanel.tsx`: filter undefined config values before passing to generateFromPageType
+  - `AutoGenerate.tsx`: added type annotation for pertemuanList, non-null assertions for parsed
+  - `Dashboard.tsx`: cast closest() result to HTMLElement for style access
+  - `Skenario.tsx`: added className prop to FieldLabel component
+  - `konten-module-editors.tsx`: String() cast for kolom judul rendering
+- Created `src/lib/sync-bridge.ts` — single coordination point for Canva ↔ Authoring stores
+  - Section A: Read authoring data (getModuleMeta, getAuthoringDataForGeneration, getKuisItems, getModules, getGames, getAuthoringExportData)
+  - Section B: Write-back from Canvas to Authoring (syncCanvasKuisToAuthoring, syncCanvasMetaToAuthoring, syncAllCanvasToAuthoring)
+  - Section C: Authoring → Canvas conversion (kuisToCanvasElements, moduleToCanvasElement, gameToCanvasElement)
+  - Section D: Unified export (unifiedExport, detectExportMode, hasCanvasContent, hasAuthoringContent)
+- Replaced all `require()` calls in canva-store.ts with sync-bridge imports
+  - `addModulElement()`: uses getModuleMeta() instead of require()
+  - `generateFromPageType()`: uses getAuthoringDataForGeneration() instead of require()
+- Replaced require() in FloatingActionBar.tsx with proper import of ALL_PAGE_TYPES
+- Updated LivePreview.tsx to use unifiedExport() for template mode
+- Updated ImportExport.tsx to use unifiedExport() for student HTML export
+- Deleted dead file: `canva-export.ts.dead`
+- Fixed ESLint config: added .js extensions to eslint-config-next imports
+- Build passes cleanly ✅
+
+Stage Summary:
+- 3 require() code smells eliminated → proper imports via sync-bridge
+- Canva ↔ Authoring Store now have a proper coordination layer
+- Unified export auto-detects mode (canvas/template/hybrid)
+- 6 TypeScript errors fixed across component files
+- Dead code removed
+- ESLint config fixed

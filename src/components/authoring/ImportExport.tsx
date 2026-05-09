@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { generateExportHtml, generatePrintAdminHtml } from '@/lib/export-html';
+import { unifiedExport, detectExportMode } from '@/lib/sync-bridge';
 import { exportProject } from '@/lib/template-engine/bridge';
 import { toast } from 'sonner';
 
@@ -27,12 +28,8 @@ export default function ImportExport() {
   const exportStudentHtml = useCallback(() => {
     const s = useAuthoringStore.getState();
     try {
-      // Use the bridge's unified exportProject() — fills all HTML slots
-      const html = exportProject({
-        meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
-        skenario: s.skenario, kuis: s.kuis, materi: s.materi,
-        modules: s.modules, games: s.games,
-      });
+      // Use unified export — auto-detects canvas/template/hybrid mode
+      const html = unifiedExport();
       const filename = (s.meta.judulPertemuan || 'media')
         .replace(/[^a-z0-9\-]/gi, '-')
         .replace(/-+/g, '-')

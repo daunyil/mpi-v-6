@@ -654,7 +654,12 @@ function TemplatesContent() {
       const { generateFromPageType } = useCanvaStore.getState();
       const pt = ALL_PAGE_TYPES.find(p => p.id === builtin.pageTypeId);
       if (pt) {
-        generateFromPageType(pt, builtin.config);
+        // Filter out undefined values from config to match Record<string, string | number | boolean>
+        const cleanConfig: Record<string, string | number | boolean> = {};
+        for (const [k, v] of Object.entries(builtin.config)) {
+          if (v !== undefined) cleanConfig[k] = v;
+        }
+        generateFromPageType(pt, cleanConfig);
       }
     }
   };

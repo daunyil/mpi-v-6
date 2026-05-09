@@ -16,6 +16,7 @@ import {
 } from '@/components/canva/types';
 import { renderElHTML as _renderElHTMLExport, exportPageHTML as exportPageHTMLExport, exportSlideshowHTML as exportSlideshowHTMLExport } from '@/lib/export/alpine-slideshow';
 import { MODUL_TYPE_SIMPLE } from '@/lib/shared/module-types';
+import { getModuleMeta, getAuthoringDataForGeneration } from '@/lib/sync-bridge';
 
 function createPage(label: string): CanvaPage {
   return {
@@ -428,26 +429,12 @@ export const useCanvaStore = create<CanvaState>((set, get) => ({
     const page = pages[currentPageIndex];
     if (!page) return;
 
-    // Fetch module info from authoring store
-    let modulType = '';
-    let modulTitle = '';
-    let modulIcon = '🧩';
-    let modulColor = '#34d399';
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { useAuthoringStore } = require('@/store/authoring-store');
-      const authState = useAuthoringStore.getState();
-      const mod = authState?.modules?.[idx];
-      if (mod) {
-        modulType = (mod.type as string) || '';
-        modulTitle = (mod.title as string) || '';
-        // Map module type to icon & color — single source of truth
-        const info = MODUL_TYPE_SIMPLE[modulType] || { icon: '🧩', color: '#34d399', label: 'Modul' };
-        modulIcon = info.icon;
-        modulColor = info.color;
-        modulTitle = modulTitle || info.label;
-      }
-    } catch { /* authoring store not available */ }
+    // Fetch module info from authoring store via sync-bridge
+    const meta = getModuleMeta(idx);
+    const modulType = meta.type;
+    const modulTitle = meta.title;
+    const modulIcon = meta.icon;
+    const modulColor = meta.color;
 
     const el: CanvaElement = {
       id: createElId(),
@@ -852,19 +839,8 @@ export const useCanvaStore = create<CanvaState>((set, get) => ({
     const { pages } = get();
     get()._pushHistory();
 
-    // Fetch kuis data from Authoring Store (if available)
-    let authoringData: { kuis?: Array<{ q: string; opts: string[]; ans: number; ex: string }>; meta?: { judulPertemuan: string; mapel: string; kelas: string; namaBab: string } } = {};
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { useAuthoringStore } = require('@/store/authoring-store');
-      const authState = useAuthoringStore.getState();
-      if (authState?.kuis?.length > 0) {
-        authoringData.kuis = authState.kuis;
-      }
-      if (authState?.meta) {
-        authoringData.meta = authState.meta;
-      }
-    } catch { /* authoring store not available */ }
+    // Fetch authoring data via sync-bridge (replaces require())
+    const authoringData = getAuthoringDataForGeneration();
 
     // Merge authoring data into config for page type generator
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

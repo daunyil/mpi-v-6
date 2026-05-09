@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
+import { unifiedExport, detectExportMode } from '@/lib/sync-bridge';
 import { exportProject } from '@/lib/template-engine/bridge';
 
 // ── Preview mode ──────────────────────────────────────────────
@@ -71,10 +72,8 @@ export default function LivePreview() {
           const html = useCanvaStore.getState().exportSlideshowHTML();
           setHtmlContent(html);
         } else {
-          // Template Engine — use bridge's exportProject() for full HTML
-          const html = exportProject({
-            meta, cp, tp, atp, alur, skenario, kuis, materi, modules, games,
-          });
+          // Template Engine — use unified export (includes authoring data)
+          const html = unifiedExport('template');
           setHtmlContent(html);
         }
       } catch (err) {

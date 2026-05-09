@@ -1098,7 +1098,7 @@ function ComparisonEditor({ mod, idx }: { mod: Record<string, unknown>; idx: num
             </div>
             {nilai.map((n, ni) => (
               <div key={ni} className="flex items-center gap-2">
-                <span className="text-xs text-zinc-500 w-20 flex-shrink-0 truncate">{kolom[ni]?.judul || `K${ni+1}`}</span>
+                <span className="text-xs text-zinc-500 w-20 flex-shrink-0 truncate">{String(kolom[ni]?.judul || `K${ni+1}`)}</span>
                 <input className={INPUT_CLS} placeholder={`Nilai kolom ${ni+1}...`} value={n} onChange={(e) => { const next = [...nilai]; next[ni] = e.target.value; updateBaris(i, 'nilai', next); }} />
               </div>
             ))}

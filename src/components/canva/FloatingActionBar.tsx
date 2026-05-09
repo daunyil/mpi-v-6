@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { ALL_PAGE_TYPES } from '@/store/page-types';
 import { toast } from 'sonner';
 
 /**
@@ -651,7 +652,6 @@ function SettingsPanel({ onClose, onToggleMode }: { onClose: () => void; onToggl
 
 function AutoGeneratePanel({ onClose }: { onClose: () => void }) {
   const { generateFromPageType } = useCanvaStore();
-  const { ALL_PAGE_TYPES, PAGE_TYPE_CATEGORIES } = require('@/store/page-types');
   const [selectedType, setSelectedType] = useState<any>(null);
   const [config, setConfig] = useState<Record<string, number | string | boolean>>({});
 
@@ -688,7 +688,7 @@ function AutoGeneratePanel({ onClose }: { onClose: () => void }) {
                   </div>
                   <input
                     type="range" min={opt.min} max={opt.max} step={opt.step || 1}
-                    value={config[opt.id] ?? opt.default}
+                    value={Number(config[opt.id] ?? opt.default)}
                     onChange={e => setConfig({ ...config, [opt.id]: parseInt(e.target.value) })}
                     className="w-full h-1 bg-[var(--bg-tertiary)] rounded-full appearance-none cursor-pointer accent-amber-500"
                   />
