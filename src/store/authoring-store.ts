@@ -239,6 +239,103 @@ const FULL_PRESET_MAP: Record<string, { meta: string; cp: string; tp: string; at
   blank: { meta: 'blank', cp: 'blank', tp: 'blank', atp: 'blank', alur: 'blank', kuis: 'blank' },
 };
 
+// ── Skenario Preset Data ────────────────────────────────────────
+const PRESETS_SKENARIO: Record<string, Array<Record<string, unknown>>> = {
+  'hakikat-norma': [
+    {
+      title: 'Kampung Tanpa Aturan',
+      bg: 'sbg-kampung',
+      charEmoji: '🧑', charColor: '#3ecfcf', charPants: '#2563eb',
+      choicePrompt: 'Apa yang akan kamu lakukan?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Di sebuah kampung, semua warga melakukan apapun yang mereka mau. Tidak ada aturan, tidak ada sanksi, tidak ada norma yang berlaku.' },
+        { speaker: 'NARRATOR', text: 'Ada yang membuang sampah ke sungai, ada yang mengambil barang tetangga, ada yang berteriak di tengah malam. Kampung menjadi kacau balau!' },
+      ],
+      choices: [
+        { icon: '🤝', label: 'Mengajak warga membuat aturan', detail: 'Berkumpul dan menyusun norma bersama', good: true, pts: 10, level: 'good', norma: 'Norma sosial muncul dari kesepakatan bersama', resultTitle: 'Langkah Bijak!', resultBody: 'Kamu memahami bahwa norma lahir dari kebutuhan manusia untuk hidup tertib bersama.', consequences: [{ icon: '✅', text: 'Warga setuju membuat aturan bersama' }, { icon: '✅', text: 'Kampung mulai tertib dan rukun' }] },
+        { icon: '🤷', label: 'Ikuti saja, yang penting selamat', detail: 'Biarin aja, nggak mau repot', good: false, pts: 2, level: 'bad', norma: 'Tanpa norma, kekacauan akan terus berlanjut', resultTitle: 'Kampung Tetap Kacau', resultBody: 'Diam berarti membiarkan kekacauan. Norma tidak akan tercipta jika tidak ada yang memulai.', consequences: [{ icon: '⚠️', text: 'Kampung semakin kacau' }, { icon: '⚠️', text: 'Warga saling bertengkar' }] },
+      ],
+    },
+    {
+      title: 'Aristoteles dan Zoon Politikon',
+      bg: 'sbg-kelas',
+      charEmoji: '🧑‍🏫', charColor: '#f9c82e', charPants: '#34d399',
+      choicePrompt: 'Bagaimana kamu merespons?',
+      setup: [
+        { speaker: 'GURU', text: 'Aristoteles mengatakan manusia adalah Zoon Politikon — makhluk sosial. Manusia tidak bisa hidup sendiri tanpa bantuan orang lain.' },
+        { speaker: 'GURU', text: 'Jadi, manusia BUTUH norma untuk mengatur hubungan antar manusia. Tanpa norma, kehidupan bersama tidak mungkin berjalan.' },
+      ],
+      choices: [
+        { icon: '💡', label: 'Setuju, manusia butuh aturan', detail: 'Norma menjaga ketertiban kehidupan bersama', good: true, pts: 10, level: 'good', norma: 'Norma adalah syarat mutlak kehidupan bermasyarakat', resultTitle: 'Pemahaman Tepat!', resultBody: 'Kamu memahami esensi norma sebagai fondasi kehidupan sosial manusia.', consequences: [{ icon: '✅', text: 'Manusia saling bergantung satu sama lain' }, { icon: '✅', text: 'Norma menjaga hubungan sosial tetap harmonis' }] },
+        { icon: '🤔', label: 'Tidak setuju, bisa hidup sendiri', detail: 'Yang penting bisa mandiri aja', good: false, pts: 3, level: 'mid', norma: 'Manusia memang bisa mandiri sebagian, tapi tetap butuh orang lain', resultTitle: 'Kurang Tepat', resultBody: 'Meskipun mandiri, kamu tetap butuh dokter, guru, petani, dan orang lain. Itulah Zoon Politikon!', consequences: [{ icon: '💡', text: 'Coba bayangkan hidup tanpa bantuan siapapun' }, { icon: '💡', text: 'Manusia tetap saling membutuhkan' }] },
+      ],
+    },
+  ],
+  'macam-norma': [
+    {
+      title: '4 Jenis Norma di Pasar',
+      bg: 'sbg-pasar',
+      charEmoji: '🧑', charColor: '#3ecfcf', charPants: '#2563eb',
+      choicePrompt: 'Norma apa yang dilanggar pedagang ini?',
+      setup: [
+        { speaker: 'NARRATOR', text: 'Di pasar, seorang pedagang menimbun barang agar harganya naik. Dia juga mengganggu pedagang lain yang menjual lebih murah.' },
+      ],
+      choices: [
+        { icon: '⚖️', label: 'Norma Hukum', detail: 'Penimbunan barang melanggar hukum', good: true, pts: 10, level: 'good', norma: 'Penimbunan barang melanggar UU Persaingan Usaha — sanksi negara', resultTitle: 'Benar!', resultBody: 'Penimbunan adalah pelanggaran norma hukum dengan sanksi dari negara.', consequences: [{ icon: '⚖️', text: 'Bisa dikenakan denda atau sanksi hukum' }, { icon: '⚠️', text: 'Merugikan masyarakat banyak' }] },
+        { icon: '🙏', label: 'Norma Agama', detail: 'Berbohong itu dosa', good: false, pts: 5, level: 'mid', norma: 'Memang dosa, tapi yang paling tepat adalah norma hukum karena ada sanksi tegas dari negara', resultTitle: 'Kurang Tepat', resultBody: 'Meskipun melanggar norma agama, penimbunan barang lebih tepat dikategorikan pelanggaran norma hukum karena ada sanksi formal dari negara.', consequences: [{ icon: '💡', text: 'Norma hukum punya sanksi paling tegas' }, { icon: '💡', text: 'Pelanggaran ekonomi diatur dalam hukum' }] },
+      ],
+    },
+  ],
+  blank: [],
+};
+
+// ── Modules Preset Data ─────────────────────────────────────────
+const PRESETS_MODULES: Record<string, Array<Record<string, unknown>>> = {
+  'hakikat-norma': [
+    { type: 'hero', title: 'Hakikat Norma', subjudul: 'Mengapa manusia membutuhkan norma?', ikon: '🤝', gradient: 'sunset', chips: ['PPKn', 'Kelas VII', 'Bab 3'], cta: 'Mulai Belajar' },
+    { type: 'kutipan', title: 'Aristoteles', teks: 'Manusia adalah makhluk sosial (Zoon Politikon) yang selalu membutuhkan orang lain dalam hidupnya.', sumber: 'Aristoteles', jabatan: 'Filosof Yunani', warna: '#f9c82e', style: 'card' },
+    { type: 'tab-icons', title: '5 Fungsi Norma', intro: 'Klik setiap tab untuk menjelajahi fungsi norma dalam kehidupan.', layout: 'vertical', animasi: 'fade-in', tabs: [
+      { icon: '🗺️', label: 'Pedoman Tingkah Laku', color: '#f9c82e', content: 'Norma memberi petunjuk kepada setiap individu tentang cara bertindak yang baik dan benar.' },
+      { icon: '🤝', label: 'Menciptakan Ketertiban', color: '#3ecfcf', content: 'Norma mencegah kekacauan dan konflik. Dengan norma, setiap orang tahu apa yang boleh dan tidak boleh dilakukan.' },
+      { icon: '🛡️', label: 'Melindungi Hak Warga', color: '#ff6b6b', content: 'Norma menjamin setiap anggota masyarakat mendapatkan hak-haknya dan diperlakukan secara adil.' },
+      { icon: '💚', label: 'Memperkuat Solidaritas', color: '#34d399', content: 'Norma mempererat rasa kebersamaan, persatuan, dan kepedulian antaranggota masyarakat.' },
+      { icon: '⚖️', label: 'Mewujudkan Keadilan', color: '#a78bfa', content: 'Norma memastikan setiap orang diperlakukan setara dan adil tanpa diskriminasi.' },
+    ] },
+    { type: 'diskusi', title: 'Diskusi Kelompok', pertanyaan: 'Mengapa manusia membutuhkan norma dalam kehidupan bermasyarakat? Berikan 2 contoh konkrit!', durasi: '05:00', petunjuk: 'Diskusikan dalam kelompok dan tuliskan kesimpulan kalian!' },
+  ],
+  'macam-norma': [
+    { type: 'hero', title: 'Macam-Macam Norma', subjudul: '4 jenis norma yang mengatur kehidupan kita', ikon: '📜', gradient: 'sunset', chips: ['PPKn', 'Kelas VII', 'Bab 3'], cta: 'Mulai Belajar' },
+    { type: 'comparison', title: 'Perbandingan 4 Jenis Norma', intro: 'Bandingkan sumber, sanksi, dan sifat masing-masing norma.', kolom: ['Norma Agama', 'Norma Kesusilaan', 'Norma Kesopanan', 'Norma Hukum'], baris: [['Sumber', 'Tuhan/Wahyu', 'Hati Nurani', 'Masyarakat', 'Negara/UUD'], ['Sanksi', 'Dosa/Kutukan', 'Rasa Bersalah', 'Cemoohan/Dikucilkan', 'Denda/Penjara'], ['Sifat', 'Mutlak', 'Mutlak', 'Relatif', 'Memaksa']], tanya: 'Norma mana yang sanksinya paling tegas? Mengapa?' },
+    { type: 'memory', title: 'Memory Match — Jenis Norma', pasangan: [
+      { kiri: 'Norma Agama', kanan: 'Bersumber dari wahyu Tuhan' },
+      { kiri: 'Norma Kesusilaan', kanan: 'Bersumber dari hati nurani' },
+      { kiri: 'Norma Kesopanan', kanan: 'Bersumber dari kebiasaan masyarakat' },
+      { kiri: 'Norma Hukum', kanan: 'Bersumber dari negara dan berlaku memaksa' },
+    ] },
+    { type: 'roda', title: 'Roda Norma', opsi: ['Norma Agama', 'Norma Kesusilaan', 'Norma Kesopanan', 'Norma Hukum', 'Adat Istiadat', 'Norma Kesusilaan'] },
+    { type: 'diskusi', title: 'Diskusi Kelompok', pertanyaan: 'Berikan 1 contoh pelanggaran norma di sekolah dan jelaskan sanksi yang sesuai untuk masing-masing jenis norma!', durasi: '05:00', petunjuk: 'Diskusikan dalam kelompok dan tuliskan kesimpulan kalian!' },
+  ],
+  blank: [],
+};
+
+// ── Materi Preset Data ──────────────────────────────────────────
+const PRESETS_MATERI: Record<string, { blok: MateriBlok[] }> = {
+  'hakikat-norma': { blok: [
+    { tipe: 'definisi', judul: 'Pengertian Norma', isi: 'Norma adalah aturan atau pedoman tingkah laku yang mengikat warga masyarakat dan berfungsi sebagai landasan untuk mengatur tata tertib kehidupan bersama. Norma lahir dari kesepakatan bersama dan memiliki sanksi bagi pelanggarnya.' },
+    { tipe: 'highlight', judul: 'Zoon Politikon', isi: 'Aristoteles menyatakan bahwa manusia adalah Zoon Politikon — makhluk sosial yang tidak bisa hidup sendiri tanpa bantuan orang lain. Karena itulah manusia membutuhkan norma untuk mengatur hubungan antar sesama.', icon: '🧠', warna: '#f9c82e' },
+    { tipe: 'poin', judul: '5 Fungsi Norma', butir: ['Pedoman tingkah laku — memberi petunjuk cara bertindak yang benar', 'Menciptakan ketertiban — mencegah kekacauan dan konflik', 'Melindungi hak warga — menjamin hak setiap orang diperlakukan adil', 'Memperkuat solidaritas — mempererat rasa kebersamaan', 'Mewujudkan keadilan — memastikan perlakuan setara tanpa diskriminasi'] },
+    { tipe: 'compare', judul: 'Kehidupan Dengan vs Tanpa Norma', kiri: { icon: '❌', judul: 'Tanpa Norma', isi: 'Kekacauan, konflik, tidak ada keadilan, hak warga tidak terlindungi, egoisme merajalela' }, kanan: { icon: '✅', judul: 'Dengan Norma', isi: 'Tertib, damai, adil, hak terlindungi, gotong royong, kepastian hukum' } },
+    { tipe: 'studi', judul: 'Studi Kasus: Kampung Harmoni', karakter: '🧑', situasi: 'Di Kampung Harmoni, warga membuat peraturan bersama: antri di sumur, tidak buang sampah di sungai, dan saling menghormati. Suatu hari, ada warga baru yang tidak mau mengikuti peraturan.', pertanyaan: 'Apa yang sebaiknya dilakukan warga Kampung Harmoni?', pesan: 'Norma efektif bila ada kesadaran dan kesepakatan bersama.' },
+  ] },
+  'macam-norma': { blok: [
+    { tipe: 'definisi', judul: 'Macam-Macam Norma', isi: 'Norma dalam masyarakat terdiri dari 4 jenis utama: Norma Agama, Norma Kesusilaan, Norma Kesopanan, dan Norma Hukum. Masing-masing memiliki sumber, sifat, dan sanksi yang berbeda.' },
+    { tipe: 'tabel', judul: 'Perbandingan 4 Jenis Norma', baris: [['Jenis Norma', 'Sumber', 'Sifat', 'Contoh Sanksi'], ['Agama', 'Tuhan/Wahyu', 'Mutlak', 'Dosa, kutukan'], ['Kesusilaan', 'Hati Nurani', 'Mutlak', 'Rasa bersalah, menyesal'], ['Kesopanan', 'Masyarakat', 'Relatif', 'Cemoohan, dikucilkan'], ['Hukum', 'Negara/UUD', 'Memaksa', 'Denda, penjara']] },
+    { tipe: 'highlight', judul: 'Norma Hukum Paling Tegas', isi: 'Di antara keempat jenis norma, norma hukum memiliki sanksi paling tegas karena ditegakkan oleh negara. Pelanggaran norma hukum dapat dikenai denda, penjara, atau sanksi formal lainnya.', icon: '⚖️', warna: '#ff6b6b' },
+    { tipe: 'poin', judul: 'Contoh Pelanggaran per Jenis Norma', butir: ['Agama: Tidak beribadah, berbohong, mencuri', 'Kesusilaan: Melakukan tindakan tidak bermoral', 'Kesopanan: Tidak sopan kepada guru, membuang sampah sembarangan', 'Hukum: Mencuri, melanggar lampu merah, korupsi'] },
+  ] },
+  blank: { blok: [] },
+};
+
 // ── Verb options ─────────────────────────────────────────────────
 export const VERB_OPTIONS = [
   'Menjelaskan', 'Mengidentifikasi', 'Menganalisis', 'Memberikan contoh',
@@ -830,6 +927,9 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
     const atp = PRESETS_ATP[mapping.atp];
     const alur = PRESETS_ALUR[mapping.alur];
     const kuis = PRESETS_KUIS[mapping.kuis];
+    const skenario = PRESETS_SKENARIO[presetKey] || [];
+    const modules = PRESETS_MODULES[presetKey] || [];
+    const materi = PRESETS_MATERI[presetKey] || { blok: [] };
 
     set({
       meta: mp ? deepClone(mp) : get().meta,
@@ -838,9 +938,13 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
       atp: atp ? deepClone(atp) : get().atp,
       alur: alur ? deepClone(alur.steps) : [],
       kuis: kuis ? deepClone(kuis.soal) : [],
+      skenario: deepClone(skenario),
+      modules: deepClone(modules),
+      games: [],
+      materi: deepClone(materi),
       dirty: true,
     });
-    toast.success(`\u26A1 Preset diterapkan: ${presetKey}`);
+    toast.success(`⚡ Preset diterapkan: ${presetKey}`);
   },
 
   applyKuisPreset: (presetKey) => {

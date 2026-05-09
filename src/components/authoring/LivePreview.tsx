@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { unifiedExport, detectExportMode } from '@/lib/sync-bridge';
-import { exportProject } from '@/lib/template-engine/bridge';
 
 // ── Preview mode ──────────────────────────────────────────────
 type PreviewMode = 'canvas' | 'template';

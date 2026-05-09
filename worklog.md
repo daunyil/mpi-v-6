@@ -196,3 +196,48 @@ Stage Summary:
 - 6 TypeScript errors fixed across component files
 - Dead code removed
 - ESLint config fixed
+---
+Task ID: 1
+Agent: Main
+Task: Priority 1 — Unify & simplify flow: remove duplication, establish single data path
+
+Work Log:
+- Analyzed the entire codebase: 3 export pipelines found (export-html.ts legacy, template-engine/ active, alpine-slideshow/ canvas)
+- Identified export-html.ts (701 lines) as 100% dead/duplicate code — only generatePrintAdminHtml() was still used by ImportExport.tsx
+- Created src/lib/export/admin-print.ts — extracted generatePrintAdminHtml() using unified ExportData type
+- Updated ImportExport.tsx: swapped import from export-html → admin-print, removed unused exportProject import
+- Updated LivePreview.tsx: removed unused exportProject import
+- Updated bridge.ts: replaced local AuthoringExportData interface with type alias to ExportData from shared/types.ts
+- Updated sync-bridge.ts: added ExportData import, typed getAuthoringExportData() return as ExportData
+- Deleted src/lib/export-html.ts (701 lines of dead legacy code removed)
+- Verified: TypeScript type check passes zero errors for changed files
+- Verified: Next.js production build compiles successfully
+
+Stage Summary:
+- ~700 lines of duplicate code removed
+- 3x duplicated type interfaces (ExportState, AuthoringExportData, ExportData) collapsed to 1 (ExportData)
+- Single unified data flow: authoring-store → sync-bridge → template-engine/bridge → auto-build → screen-templates → HTML
+- Canvas pipeline (alpine-slideshow) remains separate and clean
+- Admin print functionality preserved in new location
+---
+Task ID: 2
+Agent: Main
+Task: Priority 2 — Fix preset-templates: complete ALL page blocks (7+ pages)
+
+Work Log:
+- Analyzed the preset data flow: applyFullPreset only filled meta/cp/tp/atp/alur/kuis (6 fields)
+- Missing fields: skenario, modules, games, materi — these are what activate additional screens in auto-build.ts
+- Added PRESETS_SKENARIO: 2 chapters for hakikat-norma, 1 chapter for macam-norma (with setup + choices + consequences)
+- Added PRESETS_MODULES: hero, kutipan, tab-icons, diskusi for hakikat-norma; hero, comparison, memory, roda, diskusi for macam-norma
+- Added PRESETS_MATERI: 5 materi blok for hakikat-norma (definisi, highlight, poin, compare, studi); 4 for macam-norma (definisi, tabel, highlight, poin)
+- Updated applyFullPreset() to populate skenario, modules, games, and materi from preset data
+- Now when user clicks "Hakikat Norma" preset: auto-build generates 10+ screens (cover, petunjuk, dokumen, tujuan, skenario, materi, diskusi, kuis, hasil, refleksi, penutup)
+- Previously: only 5 screens (cover, cp, kuis, hasil) — because skenario/modules/materi were empty
+
+Stage Summary:
+- Preset data now fully populates ALL authoring store fields
+- auto-build.ts can now generate the full 10-17 screen flow instead of just 5
+- Added rich skenario data with 2 interactive chapters for hakikat-norma preset
+- Added module data that triggers tab-icons, diskusi, memory, roda, comparison screens
+- Added materi blok data for definisi, highlight, poin, compare, studi, tabel types
+- TypeScript type check and Next.js build both pass

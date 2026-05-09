@@ -2,9 +2,8 @@
 
 import { useCallback } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { generateExportHtml, generatePrintAdminHtml } from '@/lib/export-html';
+import { generatePrintAdminHtml } from '@/lib/export/admin-print';
 import { unifiedExport, detectExportMode } from '@/lib/sync-bridge';
-import { exportProject } from '@/lib/template-engine/bridge';
 import { toast } from 'sonner';
 
 export default function ImportExport() {

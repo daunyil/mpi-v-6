@@ -15,6 +15,7 @@
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { MODUL_TYPE_SIMPLE } from '@/lib/shared/module-types';
+import type { ExportData } from '@/lib/shared/types';
 import { exportProject } from '@/lib/template-engine/bridge';
 
 // ── Types ─────────────────────────────────────────────────────
@@ -81,7 +82,7 @@ export function getGames(): GameData[] {
 }
 
 /** Get full authoring export data for bridge */
-export function getAuthoringExportData() {
+export function getAuthoringExportData(): ExportData {
   const s = useAuthoringStore.getState();
   return {
     meta: s.meta,

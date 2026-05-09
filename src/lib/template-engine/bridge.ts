@@ -12,31 +12,19 @@
 // ═══════════════════════════════════════════════════════════════
 
 import type { AutoBuildData } from './template-types';
-import type {
-  MetaState, CpState, TpItem, AtpState, AlurItem,
-  KuisItem, MateriState,
-} from '@/store/authoring-store';
+import type { ExportData } from '@/lib/shared/types';
 import { exportWithTemplateSystem } from './auto-build';
 import { getModuleTypeInfo } from '@/lib/shared/module-types';
 import { FUNGSI_NORMA, esc } from '@/lib/shared/constants';
 import { renderModule } from './module-renderers';
 import { buildAllGamesHtml } from '@/lib/export/game-populator';
 
-// ── Authoring store data shape (subset we need) ──────────────
-// Uses the actual store types so consumers can pass store data
-// directly without type casting.
-export interface AuthoringExportData {
-  meta: MetaState;
-  cp: CpState;
-  tp: TpItem[];
-  atp: AtpState;
-  alur: AlurItem[];
-  skenario: Array<Record<string, unknown>>;
-  kuis: KuisItem[];
-  modules: Array<Record<string, unknown>>;
-  games: Array<Record<string, unknown>>;
-  materi: MateriState;
-}
+// ── Unified type — re-export for backward compat ───────────
+// AuthoringExportData is now an alias for the unified ExportData type
+// defined in @/lib/shared/types. This eliminates 3x type duplication
+// (ExportState in old export-html.ts, AuthoringExportData here,
+// and ExportData in shared/types.ts).
+export type AuthoringExportData = ExportData;
 
 // ═══════════════════════════════════════════════════════════════
 // 1. MODULE HTML BUILDER
@@ -158,7 +146,7 @@ export function buildModulesHtml(modules: AutoBuildData['modules']): string {
 // 2. MATERI HTML BUILDER
 // Iterates materi.blok[], renders each block by tipe
 // ═══════════════════════════════════════════════════════════════
-export function buildMateriHtml(materi: MateriState): string {
+export function buildMateriHtml(materi: ExportData['materi']): string {
   if (!materi?.blok || materi.blok.length === 0) return '';
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
