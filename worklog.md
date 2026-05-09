@@ -108,3 +108,53 @@ Stage Summary:
 - Single `exportProject()` entry point for both preview and download
 - Bridge works on both client-side and server-side
 - Build passes cleanly
+
+---
+Task ID: 4
+Agent: main
+Task: Priority 4 — Simplify canvas panel UX (Canvas-First + Zen/Pro Toggle)
+
+Work Log:
+- Analyzed all 8 existing canvas components: CanvaBuilder, IconRail, LeftPanel, RightPanel, Stage, Toolbar, StatusBar, PageTypeCreator
+- Analyzed canva-store.ts (977 lines), page-types.ts, types.ts for state/actions
+- Designed new architecture based on recommendation: Canvas-First (#2) + Zen/Pro Toggle (#4)
+- Created `PageTabBar.tsx` — Horizontal page navigation tabs at top of Zen Mode
+  - Click to navigate, double-click to rename, + to add page
+  - Duplicate/delete buttons on active tab
+  - Page index badge + element count
+- Created `FloatingActionBar.tsx` — Bottom floating bar for Zen Mode (770+ lines)
+  - 5 tab buttons: Auto-Generate, Block, Page, Style, Settings
+  - Auto-Generate panel: quick access to PageTypeCreator without LeftPanel
+  - Blocks panel: grid-based element picker with search
+  - Pages panel: thumbnail page management
+  - Style panel: background color/image, overlay, ratio
+  - Settings panel: export, clear, mode toggle
+  - Contextual Element Context Bar: appears when element selected
+    - Text elements: font size buttons (12-32)
+    - Shape/Button: color picker
+    - All: lock, visibility, delete
+  - Zoom controls + Preview/Export buttons
+- Created `ZenMode.tsx` — Canvas-First layout
+  - PageTabBar at top
+  - Full-width Stage in center
+  - FloatingActionBar at bottom
+  - No permanent side panels — zero clutter
+  - Full keyboard shortcuts support
+- Created `ProMode.tsx` — Full panel control layout (wraps existing components)
+  - Toolbar + LeftPanel + Stage + RightPanel + StatusBar
+  - Same as old CanvaBuilder but wrapped as a mode
+  - Full keyboard shortcuts support
+- Rewrote `CanvaBuilder.tsx` — Mode switcher
+  - Default: Zen Mode (persists to localStorage)
+  - Toggle via Settings panel in FloatingActionBar
+  - Mode persists across sessions
+- Build passes cleanly ✅
+
+Stage Summary:
+- 6-panel cognitive overload → 2 modes (Zen default, Pro for advanced)
+- Zen Mode: only Stage visible + floating bar + page tabs = zero distraction
+- Auto-Generate (PageTypeCreator) accessible from floating bar — no need to open LeftPanel
+- Contextual toolbars appear only when element is selected (Figma/Notion-style)
+- Pro Mode preserves all existing functionality unchanged
+- Mode toggle persisted in localStorage
+- All keyboard shortcuts work in both modes
