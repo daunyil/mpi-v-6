@@ -3,11 +3,10 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
-import { generateExportHtml } from '@/lib/export-html';
-import { exportWithTemplateSystem } from '@/lib/template-engine';
+import { exportProject } from '@/lib/template-engine/bridge';
 
 // ── Preview mode ──────────────────────────────────────────────
-type PreviewMode = 'canvas' | 'authoring' | 'template';
+type PreviewMode = 'canvas' | 'template';
 
 // ── Screen definitions for authoring navigation ───────────────
 const SCREEN_OPTIONS = [
@@ -71,15 +70,9 @@ export default function LivePreview() {
         if (previewMode === 'canvas') {
           const html = useCanvaStore.getState().exportSlideshowHTML();
           setHtmlContent(html);
-        } else if (previewMode === 'template') {
-          // Use the new Level 2 Template Engine
-          const html = exportWithTemplateSystem({
-            meta, cp, tp, atp, alur, skenario, kuis, materi, modules, games,
-          });
-          setHtmlContent(html);
         } else {
-          // Legacy authoring export
-          const html = generateExportHtml({
+          // Template Engine — use bridge's exportProject() for full HTML
+          const html = exportProject({
             meta, cp, tp, atp, alur, skenario, kuis, materi, modules, games,
           });
           setHtmlContent(html);
@@ -235,16 +228,6 @@ export default function LivePreview() {
           >
             🧩 Template
           </button>
-          <button
-            onClick={() => setPreviewMode('authoring')}
-            className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1 ${
-              previewMode === 'authoring'
-                ? 'bg-amber-500/15 text-amber-400'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700'
-            }`}
-          >
-            📝 Legacy
-          </button>
         </div>
 
         {/* Device mode buttons */}
@@ -309,7 +292,7 @@ export default function LivePreview() {
             </span>
           </div>
           <span className="text-[0.65rem] text-zinc-600">
-            {previewMode === 'canvas' ? `🎨 ${canvasPages.length} halaman` : previewMode === 'template' ? '🧩 Template Engine' : '📝 Legacy'}
+            {previewMode === 'canvas' ? `🎨 ${canvasPages.length} halaman` : '🧩 Template Engine'}
           </span>
         </div>
       </div>

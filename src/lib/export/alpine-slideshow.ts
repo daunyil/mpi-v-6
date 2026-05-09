@@ -15,41 +15,11 @@
 
 import type { CanvaPage, CanvaElement, Ratio } from '@/components/canva/types';
 import { ALPINE_INLINE } from './alpine-runtime';
+import { MODUL_TYPE_MAP } from '@/lib/shared/module-types';
+import { parseTimerSeconds } from '@/lib/shared/constants';
 
-// ── Module type color map ─────────────────────────────────────
-export const MODUL_TYPE_COLOR_MAP: Record<string, { icon: string; color: string; label: string; desc: string }> = {
-  'skenario': { icon: '🎭', color: '#f9c82e', label: 'Skenario Interaktif', desc: 'Pilihan bercabang' },
-  'video': { icon: '🎥', color: '#ff6b6b', label: 'Video Embed', desc: 'Video pembelajaran' },
-  'flashcard': { icon: '🃏', color: '#3ecfcf', label: 'Flashcard', desc: 'Kartu bolak-balik' },
-  'infografis': { icon: '📊', color: '#a78bfa', label: 'Infografis', desc: 'Kartu konsep visual' },
-  'studi-kasus': { icon: '📰', color: '#fb923c', label: 'Studi Kasus', desc: 'Analisis kasus' },
-  'debat': { icon: '🗣️', color: '#f87171', label: 'Debat & Polling', desc: 'Pro dan kontra' },
-  'timeline': { icon: '📅', color: '#34d399', label: 'Timeline', desc: 'Urutan peristiwa' },
-  'matching': { icon: '🔀', color: '#60a5fa', label: 'Game Pasangkan', desc: 'Cocokkan istilah' },
-  'materi': { icon: '📖', color: '#a1a1aa', label: 'Materi Teks', desc: 'Konten bacaan' },
-  'truefalse': { icon: '✅', color: '#34d399', label: 'Benar / Salah', desc: 'Pernyataan B/S' },
-  'memory': { icon: '🧠', color: '#a78bfa', label: 'Memory Match', desc: 'Cocokkan kartu' },
-  'roda': { icon: '🎡', color: '#fb923c', label: 'Roda Putar', desc: 'Pilihan acak' },
-  'hero': { icon: '🖼️', color: '#f9c82e', label: 'Hero Banner', desc: 'Halaman pembuka visual' },
-  'kutipan': { icon: '💬', color: '#a78bfa', label: 'Kutipan Inspiratif', desc: 'Kutipan tokoh / pepatah' },
-  'langkah': { icon: '👣', color: '#3ecfcf', label: 'Langkah-Langkah', desc: 'Prosedur / tahapan' },
-  'accordion': { icon: '🗂️', color: '#fb923c', label: 'Accordion / FAQ', desc: 'Konten lipat buka-tutup' },
-  'statistik': { icon: '📊', color: '#34d399', label: 'Statistik & Angka', desc: 'Data dan fakta visual' },
-  'polling': { icon: '🗳️', color: '#a78bfa', label: 'Polling / Voting', desc: 'Survei pilihan siswa' },
-  'embed': { icon: '🔗', color: '#3ecfcf', label: 'Embed / iFrame', desc: 'Konten dari situs lain' },
-  'tab-icons': { icon: '📑', color: '#3ecfcf', label: 'Tab Interaktif', desc: 'Tab navigasi konten' },
-  'icon-explore': { icon: '🔍', color: '#fb923c', label: 'Eksplorasi Ikon', desc: 'Grid ikon interaktif' },
-  'comparison': { icon: '⚖️', color: '#a78bfa', label: 'Perbandingan', desc: 'Bandingkan kategori' },
-  'card-showcase': { icon: '🎭', color: '#f9c82e', label: 'Card Showcase', desc: 'Card visual animasi' },
-  'hotspot-image': { icon: '🗺️', color: '#34d399', label: 'Hotspot Image', desc: 'Gambar interaktif' },
-};
-
-// ── Timer helper ───────────────────────────────────────────────
-function parseTimerSeconds(text: string): number {
-  const match = text.match(/(\d{1,2}):(\d{2})/);
-  if (match) return (parseInt(match[1]) || 0) * 60 + (parseInt(match[2]) || 0);
-  return 120;
-}
+// ── Re-export for backward compat ────────────────────────────
+export const MODUL_TYPE_COLOR_MAP = MODUL_TYPE_MAP;
 
 // ── Render one element as HTML string (same as before for static elements) ──
 export function renderElHTML(el: CanvaElement): string {
@@ -130,7 +100,7 @@ export function renderElHTML(el: CanvaElement): string {
           <div><div style="font-size:11px;font-weight:700;color:#a78bfa">${el.label || 'Materi'}</div><div style="font-size:9px;color:rgba(167,139,250,.5)">Konten materi</div></div></div></div>`;
     case 'modul': {
       const modulType = el.modulType || '';
-      const info = MODUL_TYPE_COLOR_MAP[modulType] || { icon: el.icon || '🧩', color: el.color || '#34d399', label: 'Modul', desc: 'Aktivitas pembelajaran' };
+      const info = MODUL_TYPE_MAP[modulType] || { icon: el.icon || '🧩', color: el.color || '#34d399', label: 'Modul', desc: 'Aktivitas pembelajaran' };
       const c = info.color;
       const cr = parseInt(c.slice(1,3),16);
       const cg = parseInt(c.slice(3,5),16);

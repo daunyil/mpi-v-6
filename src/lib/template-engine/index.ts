@@ -14,3 +14,7 @@ export { SCREEN_TEMPLATES, ALL_TEMPLATES, TEMPLATE_CATEGORIES, getTemplate, rend
 
 // Auto-Build
 export { autoBuildScreens, exportWithTemplateSystem } from './auto-build';
+
+// Bridge — unified data pipeline
+export { exportProject, buildModulesHtml, buildMateriHtml, buildGamesHtml, buildFungsiHtml, buildExtraScreenHtml } from './bridge';
+export type { AuthoringExportData } from './bridge';

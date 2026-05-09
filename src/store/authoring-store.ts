@@ -247,6 +247,7 @@ export const VERB_OPTIONS = [
 ];
 
 const COLOR_OPTIONS = ['#f9c82e', '#3ecfcf', '#a78bfa', '#34d399', '#ff6b6b', '#fb923c'];
+export { COLOR_OPTIONS };
 
 function colorForIndex(i: number): string {
   return COLOR_OPTIONS[i % COLOR_OPTIONS.length];
@@ -902,5 +903,3 @@ export const useAuthoringStore = create<AuthoringState>((set, get) => ({
     toast.success('\u2728 Proyek baru dibuat');
   },
 }));
-
-export { VERB_OPTIONS, COLOR_OPTIONS };

@@ -15,6 +15,7 @@ import {
   ELEM_TYPES,
 } from '@/components/canva/types';
 import { renderElHTML as _renderElHTMLExport, exportPageHTML as exportPageHTMLExport, exportSlideshowHTML as exportSlideshowHTMLExport } from '@/lib/export/alpine-slideshow';
+import { MODUL_TYPE_SIMPLE } from '@/lib/shared/module-types';
 
 function createPage(label: string): CanvaPage {
   return {
@@ -440,34 +441,8 @@ export const useCanvaStore = create<CanvaState>((set, get) => ({
       if (mod) {
         modulType = (mod.type as string) || '';
         modulTitle = (mod.title as string) || '';
-        // Map module type to icon & color (same as Konten.tsx MODULE_TYPES)
-        const typeMap: Record<string, { icon: string; color: string; label: string }> = {
-          'skenario': { icon: '🎭', color: '#f9c82e', label: 'Skenario Interaktif' },
-          'video': { icon: '🎥', color: '#ff6b6b', label: 'Video Embed' },
-          'flashcard': { icon: '🃏', color: '#3ecfcf', label: 'Flashcard' },
-          'infografis': { icon: '📊', color: '#a78bfa', label: 'Infografis' },
-          'studi-kasus': { icon: '📰', color: '#fb923c', label: 'Studi Kasus' },
-          'debat': { icon: '🗣️', color: '#f87171', label: 'Debat & Polling' },
-          'timeline': { icon: '📅', color: '#34d399', label: 'Timeline' },
-          'matching': { icon: '🔀', color: '#60a5fa', label: 'Game Pasangkan' },
-          'materi': { icon: '📖', color: '#a1a1aa', label: 'Materi Teks' },
-          'truefalse': { icon: '✅', color: '#34d399', label: 'Benar / Salah' },
-          'memory': { icon: '🧠', color: '#a78bfa', label: 'Memory Match' },
-          'roda': { icon: '🎡', color: '#fb923c', label: 'Roda Putar' },
-          'hero': { icon: '🖼️', color: '#f9c82e', label: 'Hero Banner' },
-          'kutipan': { icon: '💬', color: '#a78bfa', label: 'Kutipan Inspiratif' },
-          'langkah': { icon: '👣', color: '#3ecfcf', label: 'Langkah-Langkah' },
-          'accordion': { icon: '🗂️', color: '#fb923c', label: 'Accordion / FAQ' },
-          'statistik': { icon: '📊', color: '#34d399', label: 'Statistik & Angka Kunci' },
-          'polling': { icon: '🗳️', color: '#a78bfa', label: 'Polling / Voting' },
-          'embed': { icon: '🔗', color: '#3ecfcf', label: 'Embed / iFrame' },
-          'tab-icons': { icon: '📑', color: '#3ecfcf', label: 'Tab Interaktif' },
-          'icon-explore': { icon: '🔍', color: '#fb923c', label: 'Eksplorasi Ikon' },
-          'comparison': { icon: '⚖️', color: '#a78bfa', label: 'Perbandingan' },
-          'card-showcase': { icon: '🎭', color: '#f9c82e', label: 'Card Showcase' },
-          'hotspot-image': { icon: '🗺️', color: '#34d399', label: 'Hotspot Image' },
-        };
-        const info = typeMap[modulType] || { icon: '🧩', color: '#34d399', label: 'Modul' };
+        // Map module type to icon & color — single source of truth
+        const info = MODUL_TYPE_SIMPLE[modulType] || { icon: '🧩', color: '#34d399', label: 'Modul' };
         modulIcon = info.icon;
         modulColor = info.color;
         modulTitle = modulTitle || info.label;

@@ -4,13 +4,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import type { ScreenTemplate, RenderContext } from './template-types';
-
-// ── HTML escaping helper ─────────────────────────────────────
-function esc(str: string | number | null | undefined): string {
-  if (str == null) return '';
-  const s = String(str);
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
+import { esc } from '@/lib/shared/constants';
 
 // ── Navbar helper ────────────────────────────────────────────
 function navbar(logo: string, progress: number, score: number): string {
@@ -587,20 +581,255 @@ const TEMPLATE_FLASHCARD: ScreenTemplate = {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// TEMPLATE: PETUNJUK — Petunjuk Pembelajaran
+// ═══════════════════════════════════════════════════════════════
+const TEMPLATE_PETUNJUK: ScreenTemplate = {
+  id: 'petunjuk',
+  name: 'Petunjuk',
+  icon: '📋',
+  description: 'Halaman petunjuk navigasi pembelajaran',
+  category: 'opening',
+  color: '#3ecfcf',
+  slots: [
+    { id: 'logo', label: 'Navbar Logo', type: 'text' },
+    { id: 'judul', label: 'Judul', type: 'text', default: '📋 Petunjuk Pembelajaran' },
+    { id: 'petunjukItems', label: 'Item Petunjuk', type: 'items' },
+    { id: 'accent', label: 'Warna Aksen', type: 'text', default: '--y' },
+  ],
+  render(data, ctx) {
+    const logo = esc(data.logo as string || 'Media');
+    const judul = esc(data.judul as string || '📋 Petunjuk Pembelajaran');
+    const items = (data.petunjukItems as Array<{ icon: string; teks: string }>) || [
+      { icon: '📖', teks: 'Baca materi dengan saksama.' },
+      { icon: '💬', teks: 'Ikuti diskusi.' },
+      { icon: '🎮', teks: 'Selesaikan game.' },
+    ];
+    const accent = esc(data.accent as string || '--y');
+    const itemsHtml = items.map(it =>
+      `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px">
+        <span style="font-size:1.4rem;flex-shrink:0">${esc(it.icon)}</span>
+        <span style="font-size:.88rem;line-height:1.6;color:var(--text)">${esc(it.teks)}</span>
+      </div>`
+    ).join('');
+    return `<div class="screen" id="${ctx.screenId}">
+  ${navbar(logo, 8, ctx.score)}
+  <div class="main">
+    <div class="card"><div class="h2">${judul}</div><p class="sub mt8">Ikuti langkah-langkah berikut untuk memaksimalkan pembelajaran:</p></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">${itemsHtml}</div>
+    <div class="btn-row btn-center mt20">
+      <button class="btn btn-y" onclick="goScreen('s-dokumen')">Mulai Belajar →</button>
+    </div>
+  </div>
+</div>`;
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATE: MATERI TAB-ICONS — Materi dengan tab ikon (norma mode)
+// ═══════════════════════════════════════════════════════════════
+const TEMPLATE_MATERI_TABICONS: ScreenTemplate = {
+  id: 'materi-tabicons',
+  name: 'Materi Tab Ikon',
+  icon: '📑',
+  description: 'Materi dengan tab navigasi ikon (pola fungsi norma)',
+  category: 'materi',
+  color: '#3ecfcf',
+  slots: [
+    { id: 'logo', label: 'Navbar Logo', type: 'text' },
+    { id: 'modulesHtml', label: 'Modules HTML', type: 'richtext' },
+    { id: 'materiHtml', label: 'Materi Blok HTML', type: 'richtext' },
+    { id: 'fungsiHtml', label: 'Fungsi Tab HTML', type: 'richtext' },
+    { id: 'variant', label: 'Variant', type: 'text', default: 'tabicons' },
+    { id: 'accent', label: 'Accent', type: 'text', default: '--y' },
+    { id: 'prevScreen', label: 'Screen sebelumnya', type: 'text', default: 's-cp' },
+    { id: 'nextScreen', label: 'Screen selanjutnya', type: 'text', default: 's-kuis' },
+  ],
+  render(data, ctx) {
+    const logo = esc(data.logo as string || 'Media');
+    const modulesHtml = data.modulesHtml as string || '';
+    const materiHtml = data.materiHtml as string || '';
+    const fungsiHtml = data.fungsiHtml as string || '';
+    const prev = esc(data.prevScreen as string || 's-cp');
+    const next = esc(data.nextScreen as string || 's-kuis');
+    return `<div class="screen" id="${ctx.screenId}">
+  ${navbar(logo, 45, ctx.score)}
+  <div class="main">
+    <div class="card"><div class="h2">📖 <span class="hl">Materi</span> Pembelajaran</div><p class="sub mt8">Pelajari setiap tab dengan mengklik ikon di bawah.</p></div>
+    ${materiHtml}
+    ${modulesHtml}
+    ${fungsiHtml}
+    <div class="btn-row btn-center mt20">
+      <button class="btn btn-y" onclick="goScreen('${next}')">Lanjut →</button>
+      <button class="btn btn-ghost" onclick="goScreen('${prev}')">← Kembali</button>
+    </div>
+  </div>
+</div>`;
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATE: MATERI ACCORDION — Materi dengan accordion
+// ═══════════════════════════════════════════════════════════════
+const TEMPLATE_MATERI_ACCORDION: ScreenTemplate = {
+  id: 'materi-accordion',
+  name: 'Materi Accordion',
+  icon: '🗂️',
+  description: 'Materi dengan accordion lipat buka-tutup',
+  category: 'materi',
+  color: '#fb923c',
+  slots: [
+    { id: 'logo', label: 'Navbar Logo', type: 'text' },
+    { id: 'modulesHtml', label: 'Modules HTML', type: 'richtext' },
+    { id: 'materiHtml', label: 'Materi Blok HTML', type: 'richtext' },
+    { id: 'fungsiHtml', label: 'Fungsi Tab HTML', type: 'richtext' },
+    { id: 'variant', label: 'Variant', type: 'text', default: 'accordion' },
+    { id: 'accent', label: 'Accent', type: 'text', default: '--y' },
+    { id: 'prevScreen', label: 'Screen sebelumnya', type: 'text', default: 's-cp' },
+    { id: 'nextScreen', label: 'Screen selanjutnya', type: 'text', default: 's-kuis' },
+  ],
+  render(data, ctx) {
+    const logo = esc(data.logo as string || 'Media');
+    const modulesHtml = data.modulesHtml as string || '';
+    const materiHtml = data.materiHtml as string || '';
+    const fungsiHtml = data.fungsiHtml as string || '';
+    const prev = esc(data.prevScreen as string || 's-cp');
+    const next = esc(data.nextScreen as string || 's-kuis');
+    return `<div class="screen" id="${ctx.screenId}">
+  ${navbar(logo, 45, ctx.score)}
+  <div class="main">
+    <div class="card"><div class="h2">📖 <span class="hl">Materi</span> Pembelajaran</div><p class="sub mt8">Klik setiap bagian untuk membuka konten.</p></div>
+    ${materiHtml}
+    ${modulesHtml}
+    ${fungsiHtml}
+    <div class="btn-row btn-center mt20">
+      <button class="btn btn-y" onclick="goScreen('${next}')">Lanjut →</button>
+      <button class="btn btn-ghost" onclick="goScreen('${prev}')">← Kembali</button>
+    </div>
+  </div>
+</div>`;
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATE: HOTSPOT — Gambar interaktif dengan pin
+// ═══════════════════════════════════════════════════════════════
+const TEMPLATE_HOTSPOT: ScreenTemplate = {
+  id: 'hotspot',
+  name: 'Hotspot Image',
+  icon: '🗺️',
+  description: 'Gambar interaktif dengan hotspot pin',
+  category: 'materi',
+  color: '#34d399',
+  slots: [
+    { id: 'logo', label: 'Navbar Logo', type: 'text' },
+    { id: 'modulesHtml', label: 'Hotspot HTML', type: 'richtext' },
+    { id: 'accent', label: 'Accent', type: 'text', default: '--g' },
+    { id: 'nextScreen', label: 'Screen selanjutnya', type: 'text', default: 's-kuis' },
+  ],
+  render(data, ctx) {
+    const logo = esc(data.logo as string || 'Media');
+    const modulesHtml = data.modulesHtml as string || '<div class="card"><p style="color:var(--muted)">Hotspot belum dikonfigurasi.</p></div>';
+    const next = esc(data.nextScreen as string || 's-kuis');
+    return `<div class="screen" id="${ctx.screenId}">
+  ${navbar(logo, 52, ctx.score)}
+  <div class="main">
+    <div class="card"><div class="h2">🗺️ <span class="hl">Eksplorasi</span> Visual</div><p class="sub mt8">Klik pada area yang ditandai untuk informasi detail.</p></div>
+    ${modulesHtml}
+    <div class="btn-row btn-center mt20">
+      <button class="btn btn-y" onclick="goScreen('${next}')">Lanjut →</button>
+    </div>
+  </div>
+</div>`;
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATE: SORTIR GAME — Game kelompokkan item
+// ═══════════════════════════════════════════════════════════════
+const TEMPLATE_SORTIR_GAME: ScreenTemplate = {
+  id: 'sortir-game',
+  name: 'Game Sortir',
+  icon: '🔄',
+  description: 'Game menyortir/mengelompokkan item ke kategori',
+  category: 'interaksi',
+  color: '#34d399',
+  slots: [
+    { id: 'logo', label: 'Navbar Logo', type: 'text' },
+    { id: 'modulesHtml', label: 'Game HTML', type: 'richtext' },
+    { id: 'accent', label: 'Accent', type: 'text', default: '--g' },
+    { id: 'nextScreen', label: 'Screen selanjutnya', type: 'text', default: 's-kuis' },
+  ],
+  render(data, ctx) {
+    const logo = esc(data.logo as string || 'Media');
+    const modulesHtml = data.modulesHtml as string || '<div class="card"><p style="color:var(--muted)">Game sortir belum dikonfigurasi.</p></div>';
+    const next = esc(data.nextScreen as string || 's-kuis');
+    return `<div class="screen" id="${ctx.screenId}">
+  ${navbar(logo, 68, ctx.score)}
+  <div class="main">
+    <div class="card"><div class="h2">🔄 <span class="hl">Game</span> Sortir</div><p class="sub mt8">Kelompokkan item ke kategori yang tepat!</p></div>
+    ${modulesHtml}
+    <div class="btn-row btn-center mt20">
+      <button class="btn btn-y" onclick="goScreen('${next}')">Lanjut →</button>
+    </div>
+  </div>
+</div>`;
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATE: RODA GAME — Roda putar / spinwheel
+// ═══════════════════════════════════════════════════════════════
+const TEMPLATE_RODA_GAME: ScreenTemplate = {
+  id: 'roda-game',
+  name: 'Game Roda',
+  icon: '🎡',
+  description: 'Roda putar / spinwheel interaktif',
+  category: 'interaksi',
+  color: '#fb923c',
+  slots: [
+    { id: 'logo', label: 'Navbar Logo', type: 'text' },
+    { id: 'modulesHtml', label: 'Game HTML', type: 'richtext' },
+    { id: 'accent', label: 'Accent', type: 'text', default: '--o' },
+    { id: 'nextScreen', label: 'Screen selanjutnya', type: 'text', default: 's-kuis' },
+  ],
+  render(data, ctx) {
+    const logo = esc(data.logo as string || 'Media');
+    const modulesHtml = data.modulesHtml as string || '<div class="card"><p style="color:var(--muted)">Game roda belum dikonfigurasi.</p></div>';
+    const next = esc(data.nextScreen as string || 's-kuis');
+    return `<div class="screen" id="${ctx.screenId}">
+  ${navbar(logo, 70, ctx.score)}
+  <div class="main">
+    <div class="card"><div class="h2">🎡 <span class="hl">Roda</span> Putar</div><p class="sub mt8">Putar roda dan jawab pertanyaan!</p></div>
+    ${modulesHtml}
+    <div class="btn-row btn-center mt20">
+      <button class="btn btn-y" onclick="goScreen('${next}')">Lanjut →</button>
+    </div>
+  </div>
+</div>`;
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
 // TEMPLATE REGISTRY — All templates indexed by ID
 // ═══════════════════════════════════════════════════════════════
 export const SCREEN_TEMPLATES: Record<string, ScreenTemplate> = {
   'cover': TEMPLATE_COVER,
+  'petunjuk': TEMPLATE_PETUNJUK,
   'cp-tp-atp': TEMPLATE_CP_TP_ATP,
   'tujuan': TEMPLATE_TUJUAN,
   'skenario': TEMPLATE_SKENARIO,
   'materi': TEMPLATE_MATERI,
+  'materi-tabicons': TEMPLATE_MATERI_TABICONS,
+  'materi-accordion': TEMPLATE_MATERI_ACCORDION,
   'diskusi-timer': TEMPLATE_DISKUSI_TIMER,
   'review': TEMPLATE_REVIEW,
   'game': TEMPLATE_GAME,
   'hubungan-konsep': TEMPLATE_HUBUNGAN_KONSEP,
   'flashcard': TEMPLATE_FLASHCARD,
+  'hotspot': TEMPLATE_HOTSPOT,
   'kuis': TEMPLATE_KUIS,
+  'sortir-game': TEMPLATE_SORTIR_GAME,
+  'roda-game': TEMPLATE_RODA_GAME,
   'hasil': TEMPLATE_HASIL,
   'refleksi': TEMPLATE_REFLEKSI,
   'penutup': TEMPLATE_PENUTUP,
